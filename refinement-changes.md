@@ -46,3 +46,19 @@ Track meaningful project changes as the jam progresses.
   EditMode tests with the project closed in other Unity instances, then validate System 4 
   acceptance criteria in-editor (including inverted `CameraOrientation.Up`). Implement System 5 
   to drive live orientation vectors and camera transitions.
+
+### 2026-03-25 - System 5 camera + transparency pass
+
+- **Area:** Systems / Gameplay
+- **Reason:** The core camera mechanic required quaternion-relative rotation, smooth transitions, and runtime visibility through occluding maze geometry before game-state polish work.
+- **Change:** Added `CameraController` with cardinal snapping, key-driven quaternion target computation, transition locking hooks into `PlayerController`, orientation publishing to `CameraOrientation`, zoom clamping, and camera-distance follow behavior. Added `TransparencyManager` and connected camera `LateUpdate` to apply per-chunk transparency via `MaterialPropertyBlock` only. Added `ChunkManager.GetChunkObject` support method and new EditMode tests in `CameraSystemTests`.
+- **Impact:** Camera orientation can now rotate through axis-aligned states (including upside-down), player movement lock/unlock is coordinated with transitions, and occluding chunks along the view axis can be faded each frame without allocating material instances.
+- **Follow-up:** Verify in live PlayMode with Unity editor open: full six-orientation traversal, transparency visuals against active chunk meshes, memory profiler material count stability, and shader compatibility for `_Alpha`.
+
+### 2026-03-25 - Transparency scope note (jam decision)
+
+- **Area:** Systems / Gameplay
+- **Reason:** Per-block transparency would require renderer granularity not present in the chunk mesh architecture and would add complexity outside jam scope.
+- **Change:** Documented and kept transparency behavior at chunk granularity, where any occluding block in a chunk fades that chunk renderer.
+- **Impact:** Some non-occluding blocks inside a faded chunk may also become transparent, but runtime cost and implementation complexity stay aligned with jam constraints.
+- **Follow-up:** Revisit per-block occluder highlighting only if visual readability testing shows chunk-level fading is insufficient.

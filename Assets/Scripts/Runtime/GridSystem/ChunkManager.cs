@@ -105,6 +105,13 @@ namespace MakeItOut.Runtime.GridSystem
             return _chunks.TryGetValue(chunkCoord, out ChunkData data) ? data : null;
         }
 
+        public GameObject GetChunkObject(Vector3Int chunkCoord)
+        {
+            EnsureDictionaries();
+            _chunkObjects.TryGetValue(chunkCoord, out GameObject obj);
+            return obj;
+        }
+
         public void RebuildChunkMesh(Vector3Int chunkCoord)
         {
             Debug.Log($"RebuildChunkMesh called for {chunkCoord} - stub, implement in System 5");
