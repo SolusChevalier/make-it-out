@@ -54,6 +54,11 @@ namespace MakeItOut.Runtime.MazeGeneration
             _generationCoroutine = StartCoroutine(GenerationCoroutine(seed));
         }
 
+        public void ReportProgress(float value)
+        {
+            Progress = Mathf.Clamp01(Mathf.Max(Progress, value));
+        }
+
         public MazeGenerationSnapshot GenerateSynchronouslyForTests(int seed)
         {
             return GenerateInternal(seed, false);
@@ -133,7 +138,7 @@ namespace MakeItOut.Runtime.MazeGeneration
                 }
 #endif
 
-                Progress = 1f;
+                Progress = 0.95f;
                 OnGenerationComplete?.Invoke();
             }
             finally

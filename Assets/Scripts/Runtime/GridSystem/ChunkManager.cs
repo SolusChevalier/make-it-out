@@ -8,14 +8,14 @@ namespace MakeItOut.Runtime.GridSystem
     {
         public static ChunkManager Instance { get; private set; }
 
-        [SerializeField] private Material _opaqueMaterial;
-        [SerializeField] private Transform _chunkParent;
+        [SerializeField] private Material _blockMaterial;
+        [SerializeField] private FeaturePropRenderer _featurePropRenderer;
         [SerializeField] private int _viewDistanceChunks = 4;
-        [SerializeField] private bool _buildMeshesOnInitialise = true;
 
         private Dictionary<Vector3Int, ChunkData> _chunks;
         private Dictionary<Vector3Int, GameObject> _chunkObjects;
         private MazeGenerator _subscribedGenerator;
+        private Coroutine _initialiseRoutine;
 
         public int ViewDistanceChunks
         {
@@ -23,11 +23,7 @@ namespace MakeItOut.Runtime.GridSystem
             set => _viewDistanceChunks = Mathf.Max(0, value);
         }
 
-        public bool BuildMeshesOnInitialise
-        {
-            get => _buildMeshesOnInitialise;
-            set => _buildMeshesOnInitialise = value;
-        }
+        public Material BlockMaterial => _blockMaterial;
 
         private void Awake()
         {
@@ -59,38 +55,18 @@ namespace MakeItOut.Runtime.GridSystem
         public void InitialiseAllChunks()
         {
             EnsureDictionaries();
-            _chunks.Clear();
-            _chunkObjects.Clear();
-
-            for (int z = 0; z < GridConfig.ChunksPerAxis; z++)
+            if (Application.isPlaying)
             {
-                for (int y = 0; y < GridConfig.ChunksPerAxis; y++)
+                if (_initialiseRoutine != null)
                 {
-                    for (int x = 0; x < GridConfig.ChunksPerAxis; x++)
-                    {
-                        Vector3Int chunkCoord = new Vector3Int(x, y, z);
-                        Vector3Int origin = ChunkCoordinateUtility.ChunkOrigin(chunkCoord);
-
-                        ChunkData data = new ChunkData
-                        {
-                            ChunkCoord = chunkCoord,
-                            GridOrigin = origin,
-                            WorldOrigin = WorldGrid.Instance.GridToWorld(origin),
-                            OpaqueMesh = null,
-                            TransparentMesh = null,
-                            IsMeshDirty = false,
-                            IsActive = false,
-                        };
-
-                        GameObject chunkObject = CreateChunkObject(chunkCoord, data.WorldOrigin);
-                        AssignChunkMesh(chunkObject, chunkCoord, data);
-                        chunkObject.SetActive(false);
-
-                        _chunks.Add(chunkCoord, data);
-                        _chunkObjects.Add(chunkCoord, chunkObject);
-                    }
+                    StopCoroutine(_initialiseRoutine);
                 }
+
+                _initialiseRoutine = StartCoroutine(ChunkMeshBuilder.BuildAllChunksCoroutine(this));
+                return;
             }
+
+            ChunkMeshBuilder.BuildAllChunksImmediate(this);
         }
 
         public void UpdateActiveChunks(Vector3Int playerGridPos)
@@ -131,54 +107,36 @@ namespace MakeItOut.Runtime.GridSystem
 
         public void RebuildChunkMesh(Vector3Int chunkCoord)
         {
+            Debug.Log($"RebuildChunkMesh called for {chunkCoord} - stub, implement in System 5");
+        }
+
+        public void RegisterChunk(Vector3Int chunkCoord, ChunkData data, GameObject obj)
+        {
             EnsureDictionaries();
-            if (!_chunks.TryGetValue(chunkCoord, out ChunkData data))
-            {
-                return;
-            }
-
-            GameObject chunkObject = _chunkObjects[chunkCoord];
-            AssignChunkMesh(chunkObject, chunkCoord, data);
+            _chunks[chunkCoord] = data;
+            _chunkObjects[chunkCoord] = obj;
         }
 
-        private GameObject CreateChunkObject(Vector3Int chunkCoord, Vector3 worldOrigin)
+        public void ClearRegisteredChunks()
         {
-            GameObject chunkObject = new GameObject($"Chunk_{chunkCoord.x}_{chunkCoord.y}_{chunkCoord.z}");
-            chunkObject.transform.SetPositionAndRotation(worldOrigin, Quaternion.identity);
-            chunkObject.transform.localScale = Vector3.one;
-            chunkObject.isStatic = true;
-
-            if (_chunkParent != null)
+            EnsureDictionaries();
+            foreach (GameObject chunkObject in _chunkObjects.Values)
             {
-                chunkObject.transform.SetParent(_chunkParent, true);
-            }
-            else
-            {
-                chunkObject.transform.SetParent(transform, true);
-            }
-
-            chunkObject.AddComponent<MeshFilter>();
-            MeshRenderer renderer = chunkObject.AddComponent<MeshRenderer>();
-            if (_opaqueMaterial != null)
-            {
-                renderer.sharedMaterial = _opaqueMaterial;
+                if (chunkObject != null)
+                {
+                    if (Application.isPlaying)
+                    {
+                        Object.Destroy(chunkObject);
+                    }
+                    else
+                    {
+                        Object.DestroyImmediate(chunkObject);
+                    }
+                }
             }
 
-            chunkObject.AddComponent<MeshCollider>();
-            return chunkObject;
-        }
-
-        private void AssignChunkMesh(GameObject chunkObject, Vector3Int chunkCoord, ChunkData data)
-        {
-            Mesh mesh = _buildMeshesOnInitialise ? ChunkMeshBuilder.BuildChunkMesh(chunkCoord) : new Mesh();
-            data.OpaqueMesh = mesh;
-
-            MeshFilter filter = chunkObject.GetComponent<MeshFilter>();
-            MeshCollider collider = chunkObject.GetComponent<MeshCollider>();
-            filter.sharedMesh = mesh;
-            collider.sharedMesh = mesh;
-
-            Physics.BakeMesh(mesh.GetInstanceID(), false);
+            _chunks.Clear();
+            _chunkObjects.Clear();
         }
 
         private void EnsureDictionaries()
@@ -207,6 +165,24 @@ namespace MakeItOut.Runtime.GridSystem
         private void HandleGenerationComplete()
         {
             InitialiseAllChunks();
+        }
+
+        public void RebuildFeaturePropInstances()
+        {
+            if (_featurePropRenderer == null)
+            {
+                return;
+            }
+
+            _featurePropRenderer.BuildInstanceData();
+        }
+
+        public void ReportLoadingProgress(float value)
+        {
+            if (MazeGenerator.Instance != null)
+            {
+                MazeGenerator.Instance.ReportProgress(value);
+            }
         }
     }
 }

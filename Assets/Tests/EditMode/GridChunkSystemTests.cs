@@ -63,7 +63,7 @@ namespace MakeItOut.Tests.EditMode
             Vector3Int chunk = ChunkCoordinateUtility.GridToChunk(new Vector3Int(c - 1, c, c));
             Mesh mesh = ChunkMeshBuilder.BuildChunkMesh(chunk);
 
-            const int expectedVisibleFaces = 5;
+            const int expectedVisibleFaces = 10;
             const int indicesPerFace = 6;
             Assert.AreEqual(expectedVisibleFaces * indicesPerFace, mesh.triangles.Length);
         }
@@ -71,12 +71,16 @@ namespace MakeItOut.Tests.EditMode
         [Test]
         public void ChunkManager_ActivatesNearbyChunks_AndDeactivatesFarChunks()
         {
+            int c = GridConfig.GridSize / 2;
+            WorldGrid.Instance.SetBlock(c, c, c, BlockType.Solid);
+            WorldGrid.Instance.SetBlock(GridConfig.GridSize - 2, GridConfig.GridSize - 2, GridConfig.GridSize - 2, BlockType.Solid);
+
             GameObject chunkRoot = new GameObject("ChunkManagerTest");
             ChunkManager manager = chunkRoot.AddComponent<ChunkManager>();
-            manager.BuildMeshesOnInitialise = false;
+            manager.ViewDistanceChunks = 0;
             manager.InitialiseAllChunks();
 
-            Vector3Int playerNearOrigin = Vector3Int.zero;
+            Vector3Int playerNearOrigin = new Vector3Int(c, c, c);
             manager.UpdateActiveChunks(playerNearOrigin);
 
             ChunkData nearChunk = manager.GetChunk(playerNearOrigin);

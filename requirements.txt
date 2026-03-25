@@ -3,7 +3,8 @@ Last updated: 2026-03-25
 
 [Platform]
 - Primary platform: Windows desktop.
-- Engine: Unity.
+- Engine: Unity 2022 LTS or newer.
+- Target frame rate: 60fps on mid-range desktop hardware.
 
 [Jam Governance]
 - Maintain required moderation documents in repository root:
@@ -12,18 +13,41 @@ Last updated: 2026-03-25
   - README.md
   - requirements.txt
   - refinement-changes.md
-- Agents must append updates as project work progresses.
+- Agents must append dated entries to tracking documents.
+- Agents must not delete historical entries.
 
 [Gameplay Minimum]
-- Player can spawn, navigate, and reach an exit.
-- Run can end in a fail or win state.
+- Player spawns at the centre of a procedurally generated cube maze.
+- Player can move, jump, and climb relative to current camera orientation.
+- Player can switch camera to any of six axis-aligned orthographic views.
+- Gravity and jump always act along the current camera's vertical axis — no world Y hardcoding.
+- Player can reach an exit on the outer boundary and trigger a win state.
 - Session can be restarted without editor intervention.
 
+[Generation]
+- Maze is a 63x63x63 block grid generated at load time on a loading screen.
+- Generation uses Unity Burst compiler and Job System for all heavy passes.
+- Maze must be fully connected — every interior air cell reachable from the centre.
+- At least 3 exits must exist on different faces of the outer boundary.
+- Same seed must produce identical maze output across runs.
+
 [Technical]
-- Avoid per-frame allocations in gameplay-critical update paths.
+- Block size is 2x2x2 world units throughout — no 1-unit assumptions anywhere.
+- World grid is a flat NativeArray<byte> during generation, copied to managed byte[] at runtime.
+- All grid coordinate conversions use GridConfig constants — no magic numbers in code.
+- Chunk system divides grid into 8x8x8 block chunks with distance-based activation culling.
+- Chunk meshes are face-culled — no interior solid-to-solid faces ever rendered.
+- Feature props (ladders, stairs, exits) render via Graphics.DrawMeshInstanced — no per-prop 
+  GameObjects.
+- Camera orientation is a Quaternion at all times — never a named enum or hardcoded axis.
+- Transparency pass uses MaterialPropertyBlock — no material instantiation per frame.
+- Avoid per-frame heap allocations in movement, camera, and transparency update paths.
 - Keep gameplay logic separated from presentation where practical.
 - Prefer testable systems for core generation and rules.
 
 [Quality]
-- Changes should include concise update notes in refinement-changes.md.
-- Major scope or priority changes should update plan.md.
+- Each system must pass its defined acceptance criteria before the next system is started.
+- Changes must include concise update notes in refinement-changes.md.
+- Major scope or priority changes must update plan.md.
+- All NativeArray and NativeList allocations must be disposed — zero JobTempAlloc leak 
+  warnings in console before moving between systems.
