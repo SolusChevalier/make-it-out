@@ -30,4 +30,6 @@ This repository maintains the following jam moderation documents at the project 
 
 ## Current Focus
 
-See `plan.md` for active milestones and next development tasks.
+System 4 (player controller and orientation stubs) is implemented under 
+`Assets/Scripts/Runtime/Player/`. Next dependency is System 5 (camera system replacing 
+`CameraOrientation` internals). See `plan.md` for milestones and acceptance checks.

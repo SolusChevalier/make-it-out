@@ -32,6 +32,8 @@ Last updated: 2026-03-25
 - Same seed must produce identical maze output across runs.
 
 [Technical]
+- System 4 player movement uses the legacy Input Manager axes `Horizontal`, `Vertical`, and 
+  `Jump` (not the new Input System package) until a later input migration.
 - Block size is 2x2x2 world units throughout — no 1-unit assumptions anywhere.
 - World grid is a flat NativeArray<byte> during generation, copied to managed byte[] at runtime.
 - All grid coordinate conversions use GridConfig constants — no magic numbers in code.

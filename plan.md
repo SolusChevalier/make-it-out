@@ -75,6 +75,15 @@ The game is built in five systems in dependency order:
 
 ## Change Log
 
+### 2026-03-25 — System 4 player controller
+
+- Implemented `CameraOrientation` stub, `GameManager` win/fail/restart stub, and 
+  `PlayerController` (CharacterController-based) with camera-relative gravity, jump, ladder 
+  climb, step-up coroutine, and camera-switch lock hooks for System 5.
+- Added EditMode coverage for ground-cell offset math, singleton stubs, and camera-switch 
+  velocity reset. Full acceptance criteria (multi-orientation play, mesh collision, corridor 
+  scene) require manual or PlayMode verification in Unity.
+
 ### 2026-03-25
 
 - Rewrote plan to reflect actual game design: axis-switch camera mechanic, orientation-relative 
