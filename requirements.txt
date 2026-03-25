@@ -1,0 +1,29 @@
+PROJECT REQUIREMENTS - MAKE IT OUT
+Last updated: 2026-03-25
+
+[Platform]
+- Primary platform: Windows desktop.
+- Engine: Unity.
+
+[Jam Governance]
+- Maintain required moderation documents in repository root:
+  - high-concept.md
+  - plan.md
+  - README.md
+  - requirements.txt
+  - refinement-changes.md
+- Agents must append updates as project work progresses.
+
+[Gameplay Minimum]
+- Player can spawn, navigate, and reach an exit.
+- Run can end in a fail or win state.
+- Session can be restarted without editor intervention.
+
+[Technical]
+- Avoid per-frame allocations in gameplay-critical update paths.
+- Keep gameplay logic separated from presentation where practical.
+- Prefer testable systems for core generation and rules.
+
+[Quality]
+- Changes should include concise update notes in refinement-changes.md.
+- Major scope or priority changes should update plan.md.
