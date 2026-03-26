@@ -150,6 +150,8 @@ namespace MakeItOut.Runtime.Player
             PausePanel = PausePanel != null ? PausePanel : CreatePanel(canvas, "PausePanel");
             LevelResultPanel = LevelResultPanel != null ? LevelResultPanel : CreatePanel(canvas, "LevelResultPanel");
 
+            EnsureSwitchFlash(canvas);
+
             if (LoadingPanel.GetComponent<LoadingPanelController>() == null)
                 BuildLoadingPanel(LoadingPanel);
             if (HudPanel.GetComponent<HudPanelController>() == null)
@@ -158,6 +160,27 @@ namespace MakeItOut.Runtime.Player
                 BuildPausePanel(PausePanel);
             if (LevelResultPanel.GetComponent<LevelResultPanelController>() == null)
                 BuildResultPanel(LevelResultPanel);
+        }
+
+        private static void EnsureSwitchFlash(Transform canvas)
+        {
+            Transform existing = canvas.Find("SwitchFlash");
+            if (existing != null && existing.GetComponent<SwitchFlashController>() != null)
+                return;
+
+            GameObject flash = existing != null ? existing.gameObject : new GameObject("SwitchFlash", typeof(RectTransform), typeof(Image), typeof(SwitchFlashController));
+            if (existing == null)
+                flash.transform.SetParent(canvas, false);
+
+            RectTransform rt = flash.GetComponent<RectTransform>();
+            rt.anchorMin = Vector2.zero;
+            rt.anchorMax = Vector2.one;
+            rt.offsetMin = Vector2.zero;
+            rt.offsetMax = Vector2.zero;
+
+            Image image = flash.GetComponent<Image>();
+            image.raycastTarget = false;
+            image.color = Color.clear;
         }
 
         private static GameObject CreatePanel(Transform parent, string name)

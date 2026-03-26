@@ -1,5 +1,6 @@
 using System.Collections;
 using MakeItOut.Runtime.GridSystem;
+using MakeItOut.Runtime.Audio;
 using UnityEngine;
 
 namespace MakeItOut.Runtime.Player
@@ -25,6 +26,8 @@ namespace MakeItOut.Runtime.Player
         private bool _isOnLadder;
         private bool _isSwitching;
         private bool _isStepping;
+        private PlayerVisuals _playerVisuals;
+        private float _peakFallSpeed;
 
         /// <summary>Exposed for tests and diagnostics.</summary>
         public Vector3Int GridPosition => _gridPos;
@@ -51,6 +54,25 @@ namespace MakeItOut.Runtime.Player
 
             Instance = this;
             _cc = GetComponent<CharacterController>();
+            _playerVisuals = GetComponentInChildren<PlayerVisuals>();
+            if (_playerVisuals == null)
+            {
+                MeshFilter rootFilter = GetComponent<MeshFilter>();
+                MeshRenderer rootRenderer = GetComponent<MeshRenderer>();
+                if (rootFilter != null && rootRenderer != null)
+                {
+                    GameObject visualGo = new GameObject("Visual", typeof(MeshFilter), typeof(MeshRenderer), typeof(PlayerVisuals), typeof(PlayerEmissiveOutline));
+                    visualGo.transform.SetParent(transform, false);
+                    visualGo.GetComponent<MeshFilter>().sharedMesh = rootFilter.sharedMesh;
+                    visualGo.GetComponent<MeshRenderer>().sharedMaterials = rootRenderer.sharedMaterials;
+                    rootRenderer.enabled = false;
+                    _playerVisuals = visualGo.GetComponent<PlayerVisuals>();
+                }
+                else
+                {
+                    _playerVisuals = gameObject.AddComponent<PlayerVisuals>();
+                }
+            }
         }
 
         private void OnDestroy()
@@ -77,6 +99,7 @@ namespace MakeItOut.Runtime.Player
 
             Vector3 camUp = CameraOrientation.Instance.Up;
             Vector3 camRight = CameraOrientation.Instance.Right;
+            bool wasGrounded = _isGrounded;
 
             Vector3 basePoint = transform.position - camUp * (_cc.height * 0.5f - _cc.radius);
             bool physicsGround = Physics.SphereCast(
@@ -92,13 +115,28 @@ namespace MakeItOut.Runtime.Player
 
             _isGrounded = physicsGround && gridGround;
 
+            if (!_isGrounded)
+            {
+                float downwardSpeed = Vector3.Dot(_velocity, -camUp);
+                if (downwardSpeed > _peakFallSpeed)
+                    _peakFallSpeed = downwardSpeed;
+            }
+
             if (_isGrounded)
             {
+                if (!wasGrounded && _peakFallSpeed > 0.5f)
+                {
+                    _playerVisuals?.OnLanded(_peakFallSpeed);
+                    AudioManager.Instance?.PlayLand(_peakFallSpeed);
+                }
+
                 float downComponent = Vector3.Dot(_velocity, -camUp);
                 if (downComponent < 0f)
                 {
                     _velocity -= -camUp * downComponent;
                 }
+
+                _peakFallSpeed = 0f;
             }
 
             _isOnLadder = WorldGrid.Instance.GetFeature(_gridPos) == FeatureType.Ladder;
@@ -125,6 +163,8 @@ namespace MakeItOut.Runtime.Player
 
                     if (Input.GetButtonDown("Jump") && _isGrounded)
                     {
+                        _playerVisuals?.OnJump();
+                        AudioManager.Instance?.PlayJump();
                         _velocity += camUp * JumpForce;
                         _isGrounded = false;
                     }

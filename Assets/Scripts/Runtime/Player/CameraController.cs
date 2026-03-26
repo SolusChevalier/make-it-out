@@ -1,4 +1,7 @@
+using System.Collections;
 using MakeItOut.Runtime.GridSystem;
+using MakeItOut.Runtime.Audio;
+using MakeItOut.Runtime.UI;
 using UnityEngine;
 
 namespace MakeItOut.Runtime.Player
@@ -36,6 +39,7 @@ namespace MakeItOut.Runtime.Player
         private bool _isTransitioning;
         private float _currentZoom;
         private PlayerController _playerController;
+        private Coroutine _pulseCoroutine;
 
         private void Awake()
         {
@@ -134,12 +138,18 @@ namespace MakeItOut.Runtime.Player
             _transitionProgress = 0f;
             _isTransitioning = true;
 
+            SwitchFlashController.Instance?.Flash();
+            AudioManager.Instance?.PlaySwitch();
             GameManager.Instance?.NotifyOrientationSwitch();
 
             if (_playerController != null)
             {
                 _playerController.OnCameraSwitchStart();
             }
+
+            if (_pulseCoroutine != null)
+                StopCoroutine(_pulseCoroutine);
+            _pulseCoroutine = StartCoroutine(OrthoPulse(_currentZoom));
         }
 
         private void UpdateTransition()
@@ -172,7 +182,7 @@ namespace MakeItOut.Runtime.Player
             Quaternion animated = Quaternion.Slerp(
                 _transitionStartOrientation,
                 _targetOrientation,
-                SmoothStep(_transitionProgress));
+                EaseOutBack(_transitionProgress));
 
             ApplyCameraTransform(animated);
             PositionCamera(animated);
@@ -264,9 +274,33 @@ namespace MakeItOut.Runtime.Player
             return new Vector3(0f, 0f, Mathf.Sign(v.z));
         }
 
-        private static float SmoothStep(float t)
+        private static float EaseOutBack(float t)
         {
-            return t * t * (3f - 2f * t);
+            const float c1 = 1.70158f;
+            const float c3 = c1 + 1f;
+            t = Mathf.Clamp01(t);
+            return 1f + c3 * Mathf.Pow(t - 1f, 3f) + c1 * Mathf.Pow(t - 1f, 2f);
+        }
+
+        private IEnumerator OrthoPulse(float baseSize)
+        {
+            if (_cam == null)
+                yield break;
+
+            float peak = baseSize * 1.08f;
+            float elapsed = 0f;
+            float duration = Mathf.Max(0.001f, _transitionDuration);
+
+            while (elapsed < duration)
+            {
+                elapsed += Time.deltaTime;
+                float t = elapsed / duration;
+                float pulse = Mathf.Sin(t * Mathf.PI);
+                _cam.orthographicSize = Mathf.Lerp(baseSize, peak, pulse * 0.5f);
+                yield return null;
+            }
+
+            _cam.orthographicSize = baseSize;
         }
 
         private void OnDrawGizmos()

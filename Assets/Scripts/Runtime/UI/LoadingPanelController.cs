@@ -49,7 +49,10 @@ namespace MakeItOut.Runtime.UI
             }
 
             if (_fill != null)
+            {
                 _fill.fillAmount = Mathf.Lerp(_fill.fillAmount, progress, Time.deltaTime * 8f);
+                _fill.color = Color.Lerp(new Color(0.4f, 0.4f, 0.4f), UiStyle.AccentGold, _fill.fillAmount);
+            }
             if (_statusLabel != null)
                 _statusLabel.text = status;
         }

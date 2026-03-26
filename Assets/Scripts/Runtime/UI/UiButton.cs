@@ -1,11 +1,14 @@
 using System;
+using System.Collections;
+using MakeItOut.Runtime.Audio;
 using TMPro;
 using UnityEngine;
+using UnityEngine.EventSystems;
 using UnityEngine.UI;
 
 namespace MakeItOut.Runtime.UI
 {
-    public class UiButton : MonoBehaviour
+    public class UiButton : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler
     {
         [SerializeField] private Button _button;
         [SerializeField] private TMP_Text _label;
@@ -44,7 +47,11 @@ namespace MakeItOut.Runtime.UI
             if (_button == null || onClick == null)
                 return;
 
-            _button.onClick.AddListener(() => onClick());
+            _button.onClick.AddListener(() =>
+            {
+                AudioManager.Instance?.PlayUiClick();
+                onClick();
+            });
         }
 
         public void SetInteractable(bool value)
@@ -55,6 +62,32 @@ namespace MakeItOut.Runtime.UI
                 _label.color = value ? UiStyle.TextPrimary : UiStyle.TextDim;
             if (_background != null)
                 _background.color = value ? UiStyle.ButtonNormal : UiStyle.LockedLevel;
+        }
+
+        public void OnPointerEnter(PointerEventData _)
+        {
+            StopAllCoroutines();
+            StartCoroutine(ScaleTo(Vector3.one * 1.05f, 0.1f));
+        }
+
+        public void OnPointerExit(PointerEventData _)
+        {
+            StopAllCoroutines();
+            StartCoroutine(ScaleTo(Vector3.one, 0.1f));
+        }
+
+        private IEnumerator ScaleTo(Vector3 target, float duration)
+        {
+            Vector3 start = transform.localScale;
+            float elapsed = 0f;
+            while (elapsed < duration)
+            {
+                elapsed += Time.deltaTime;
+                transform.localScale = Vector3.Lerp(start, target, elapsed / duration);
+                yield return null;
+            }
+
+            transform.localScale = target;
         }
     }
 }

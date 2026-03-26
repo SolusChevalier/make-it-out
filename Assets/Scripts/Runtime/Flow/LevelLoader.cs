@@ -74,6 +74,8 @@ namespace MakeItOut.Runtime.Flow
             LoadProgress = 0.95f;
             yield return null;
 
+            EnsureFogController();
+
             Vector3 spawnPos = WorldGrid.Instance.GridToWorld(WorldGrid.Instance.GetCentreCell())
                              + (CameraOrientation.Instance?.Up ?? Vector3.up) * GridConfig.BlockSize;
             PlayerController.Instance.Teleport(spawnPos);
@@ -81,6 +83,19 @@ namespace MakeItOut.Runtime.Flow
             yield return null;
 
             OnLevelReady?.Invoke();
+        }
+
+        private static void EnsureFogController()
+        {
+            FogController fog = FindObjectOfType<FogController>();
+            if (fog != null)
+            {
+                fog.enabled = true;
+                return;
+            }
+
+            GameObject go = new GameObject("FogController");
+            go.AddComponent<FogController>();
         }
     }
 }

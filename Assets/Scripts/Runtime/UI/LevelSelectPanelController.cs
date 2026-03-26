@@ -3,6 +3,7 @@ using MakeItOut.Runtime.Progression;
 using MakeItOut.Runtime.Player;
 using TMPro;
 using UnityEngine;
+using UnityEngine.UI;
 
 namespace MakeItOut.Runtime.UI
 {
@@ -11,6 +12,7 @@ namespace MakeItOut.Runtime.UI
         [SerializeField] private UiButton _backButton;
         [SerializeField] private Transform _scrollContent;
         [SerializeField] private LevelButtonItem _levelButtonPrefab;
+        [SerializeField] private ScrollRect _scrollRect;
 
         private readonly List<LevelButtonItem> _buttons = new List<LevelButtonItem>();
 
@@ -22,6 +24,8 @@ namespace MakeItOut.Runtime.UI
                 _scrollContent = transform.Find("ScrollView/Viewport/Content");
             if (_levelButtonPrefab == null)
                 _levelButtonPrefab = transform.Find("ScrollView/Viewport/Content/LevelButtonTemplate")?.GetComponent<LevelButtonItem>();
+            if (_scrollRect == null)
+                _scrollRect = transform.Find("ScrollView")?.GetComponent<ScrollRect>();
 
             _backButton?.AddListener(() => GameManager.Instance.GoToMainMenu());
         }
@@ -56,6 +60,21 @@ namespace MakeItOut.Runtime.UI
                 btn.Bind(i, def, unlocked, stars, bestTime);
                 _buttons.Add(btn);
             }
+
+            ScrollToCurrentLevel();
+        }
+
+        private void ScrollToCurrentLevel()
+        {
+            if (_scrollRect == null || _buttons.Count == 0)
+                return;
+
+            int current = ServiceLocator.Progression.GetHighestUnlockedIndex();
+            if (current < 0 || current >= _buttons.Count)
+                return;
+
+            float normalised = 1f - (float)current / Mathf.Max(1, _buttons.Count - 1);
+            _scrollRect.verticalNormalizedPosition = normalised;
         }
     }
 

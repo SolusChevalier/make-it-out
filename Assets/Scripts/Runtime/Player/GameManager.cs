@@ -3,6 +3,7 @@ using System.Linq;
 using System;
 using MakeItOut.Runtime.Flow;
 using MakeItOut.Runtime.Progression;
+using MakeItOut.Runtime.Audio;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
@@ -38,6 +39,8 @@ namespace MakeItOut.Runtime.Player
             Instance = this;
             ActiveLevel = new ActiveLevelContext();
             DontDestroyOnLoad(gameObject);
+            AudioManager.EnsureInstance();
+            WinEffectSpawner.EnsureInstance();
         }
 
         private void Start()
@@ -250,6 +253,8 @@ namespace MakeItOut.Runtime.Player
                 elapsed,
                 ActiveLevel.StarsEarned);
 
+            AudioManager.Instance?.PlayExitFound();
+            WinEffectSpawner.Instance?.SpawnAt(PlayerController.Instance != null ? PlayerController.Instance.transform.position : Vector3.zero);
             TransitionTo(GameState.LevelResult);
         }
 

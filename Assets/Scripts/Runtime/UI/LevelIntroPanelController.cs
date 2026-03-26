@@ -20,6 +20,9 @@ namespace MakeItOut.Runtime.UI
 
         private void Awake()
         {
+            if (GetComponent<PanelSlideIn>() == null)
+                gameObject.AddComponent<PanelSlideIn>();
+
             if (_levelNumber == null)
                 _levelNumber = transform.Find("LevelNumber")?.GetComponent<TMP_Text>();
             if (_levelName == null)

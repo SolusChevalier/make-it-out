@@ -16,6 +16,8 @@ namespace MakeItOut.Runtime.GridSystem
         private readonly List<Matrix4x4[]> _ladderBatches = new List<Matrix4x4[]>();
         private readonly List<Matrix4x4[]> _stairBatches = new List<Matrix4x4[]>();
         private readonly List<Matrix4x4[]> _exitBatches = new List<Matrix4x4[]>();
+        private readonly MaterialPropertyBlock _exitMpb = new MaterialPropertyBlock();
+        private static readonly int s_emissionColorId = Shader.PropertyToID("_EmissionColor");
 
         private void Start()
         {
@@ -73,7 +75,7 @@ namespace MakeItOut.Runtime.GridSystem
         {
             DrawBatches(_ladderMesh, _ladderMaterial, _ladderBatches);
             DrawBatches(_stairMesh, _stairMaterial, _stairBatches);
-            DrawBatches(_exitMesh, _exitMaterial, _exitBatches);
+            DrawExitBatches();
         }
 
         private static void BuildBatches(List<Matrix4x4> source, List<Matrix4x4[]> batches)
@@ -101,6 +103,19 @@ namespace MakeItOut.Runtime.GridSystem
             {
                 Graphics.DrawMeshInstanced(mesh, 0, material, batches[i]);
             }
+        }
+
+        private void DrawExitBatches()
+        {
+            if (_exitMesh == null || _exitMaterial == null)
+                return;
+
+            float pulse = (Mathf.Sin(Time.time * 2.5f) + 1f) * 0.5f;
+            Color emission = new Color(0.2f, 1f, 0.4f) * Mathf.Lerp(0.5f, 2.5f, pulse);
+            _exitMpb.SetColor(s_emissionColorId, emission);
+
+            for (int i = 0; i < _exitBatches.Count; i++)
+                Graphics.DrawMeshInstanced(_exitMesh, 0, _exitMaterial, _exitBatches[i], _exitBatches[i].Length, _exitMpb);
         }
 
         private void ValidateMaterials()

@@ -19,6 +19,9 @@ namespace MakeItOut.Runtime.UI
 
         private void Awake()
         {
+            if (GetComponent<PanelSlideIn>() == null)
+                gameObject.AddComponent<PanelSlideIn>();
+
             if (_completeLabel == null)
                 _completeLabel = transform.Find("ResultHeader/CompleteLabel")?.GetComponent<TMP_Text>();
             if (_personalBestBadge == null)
