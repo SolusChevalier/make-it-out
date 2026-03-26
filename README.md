@@ -10,6 +10,8 @@ This repository maintains the following jam moderation documents at the project 
 - `plan.md`
 - `requirements.txt`
 - `refinement-changes.md`
+- `AGENTS.md`
+- `CLAUDE.md`
 - `README.md` (this file)
 
 ## Maintenance Rules For Agents
@@ -21,12 +23,17 @@ This repository maintains the following jam moderation documents at the project 
 - Update `plan.md` when scope, priorities, or milestones shift.
 - Update `requirements.txt` when new constraints are introduced.
 - Update `refinement-changes.md` for each meaningful implementation change.
+- Keep `AGENTS.md` and `CLAUDE.md` aligned when process guidance changes.
 
 ## Quick Start
 
 1. Open project in Unity Hub.
 2. Use a 2022+ LTS editor that matches project packages.
 3. Run Edit Mode tests before significant merges.
+4. Generate testing scenes from `Tools/Make It Out/Create DevEnv Scenes`.
+5. Open `Assets/Scenes/DevEnv/DevBoot.unity` for full generation-flow validation.
+6. Open `Assets/Scenes/DevEnv/DevCorridor.unity` for fast manual movement/camera checks.
+7. In Play Mode, press `F3` to toggle the dev HUD overlay.
 
 ## Current Focus
 

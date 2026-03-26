@@ -28,6 +28,7 @@
 .idea/
 .vscode/
 .vs/
+.claude/settings.local.json
 
 # OS files
 .DS_Store

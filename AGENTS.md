@@ -9,6 +9,7 @@ All coding agents working in this repository must keep jam moderation documentat
 3. For every meaningful implementation pass, append an entry to `refinement-changes.md`.
 4. If the game vision shifts, update `high-concept.md`.
 5. Keep `README.md` aligned with the current documentation workflow.
+6. Keep `CLAUDE.md` aligned with agent workflow guidance when process rules change.
 
 ## Change Log Rules
 

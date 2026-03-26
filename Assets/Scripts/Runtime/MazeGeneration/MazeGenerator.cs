@@ -2,6 +2,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using MakeItOut.Runtime.GridSystem;
+using MakeItOut.Runtime.Player;
 using Unity.Collections;
 using Unity.Jobs;
 using UnityEngine;
@@ -139,6 +140,11 @@ namespace MakeItOut.Runtime.MazeGeneration
 #endif
 
                 Progress = 0.95f;
+                if (GameManager.Instance != null)
+                {
+                    GameManager.Instance.NotifyGenerationComplete();
+                }
+
                 OnGenerationComplete?.Invoke();
             }
             finally

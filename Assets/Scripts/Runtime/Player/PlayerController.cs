@@ -33,6 +33,12 @@ namespace MakeItOut.Runtime.Player
         /// <summary>Exposed for tests and diagnostics.</summary>
         public Vector3 Velocity => _velocity;
 
+        /// <summary>Exposed for diagnostics HUD.</summary>
+        public bool IsGrounded => _isGrounded;
+
+        /// <summary>Exposed for diagnostics HUD.</summary>
+        public bool IsOnLadder => _isOnLadder;
+
         private void Awake()
         {
             _cc = GetComponent<CharacterController>();
@@ -144,6 +150,12 @@ namespace MakeItOut.Runtime.Player
             if (WorldGrid.Instance.GetFeature(_gridPos) == FeatureType.Exit)
             {
                 GameManager.Instance.TriggerWin();
+            }
+
+            // Out of bounds check - triggers fail if player leaves the grid.
+            if (!WorldGrid.Instance.InBounds(_gridPos))
+            {
+                GameManager.Instance.TriggerFail();
             }
         }
 
