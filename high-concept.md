@@ -60,7 +60,7 @@ getting out.
 - No combat, no collectibles, no enemies.
 - No procedural difficulty beyond grid size — complexity emerges from scale.
 - Visual polish is secondary to spatial clarity of the maze geometry.
-- Audio and atmosphere are stretch goals after the core loop is stable.
+- Audio and atmosphere remain minimal and readability-focused.
 
 ## Change Log
 
@@ -68,3 +68,9 @@ getting out.
 
 - Rewrote to reflect level-based progression pivot. Previous version described a
   single-run escape loop. Core mechanic description is unchanged.
+
+### 2026-03-26
+
+- Final submission pass: concept confirmed against shipped flow
+  (Bootstrap -> MainMenu -> LevelSelect -> LevelIntro -> Loading -> Playing -> Result),
+  with lightweight audiovisual feedback and no expansion beyond the jam scope guardrails.

@@ -169,3 +169,19 @@ only where parameterization is required (grid sizing in Stage B).
 - **Change:** Added camera switch polish hooks (ease-out-back timing curve, orthographic pulse, screen flash trigger, switch SFX hook), player feel components (`PlayerVisuals` land/jump squash and stretch with fall-intensity tracking), and result feedback (`WinEffectSpawner` burst + panel slide-in support). Added reusable polish systems and hooks (`AudioManager`, `SwitchFlashController`, `PanelSlideIn`), upgraded UI interactions (button click SFX + hover scale), loading bar gray-to-gold fill coloring, and level-select auto-scroll to current progress. Added fog scaling by level size via `FogController` and scene-load wiring through `LevelLoader`. Added exit pulsing emission in `FeaturePropRenderer` for stronger exit readability.
 - **Impact:** Core loop interactions now have immediate sensory confirmation (camera switch, jump/land, win, button clicks), while HUD and environment readability improve without changing progression/service/state-machine rules.
 - **Follow-up:** In an authenticated Unity editor session, assign actual audio clips and optional particle prefab assets, then run the Stage E acceptance pass (especially camera feel tuning and final volume balancing at GridSize 63).
+
+### 2026-03-26 - Stage F tests, regression scaffolding, and submission docs pass
+
+- **Area:** QA / Regression / Docs / Build-readiness
+- **Reason:** Final stage required hardening automated coverage for Stages A-E and aligning moderation artifacts with the shipped state before submission.
+- **Change:** Added dedicated Stage F test assemblies and suites: `PersistenceServiceTests`, `ScoringServiceTests`, `ProgressionServiceTests`, `GridSessionTests`, plus PlayMode coverage scaffolds for game flow and systems regression (`GameFlowTests`, `SystemsRegressionPlayModeTests`). Updated test asmdefs to explicit EditMode and PlayMode assemblies. Performed CLI compile verification (`dotnet build`) and attempted Unity batch EditMode execution; Unity produced licensing-token/ULF warnings and did not emit the requested results file in this environment. Updated `high-concept.md`, `plan.md`, `requirements.txt`, and `README.md` to reflect shipped loop, milestone completion state, and final control instructions.
+- **Impact:** Repository now includes a clearer automated verification baseline and final documentation alignment for submission review, with explicit note of remaining environment-gated manual checks.
+- **Follow-up:** Run Unity Test Runner (EditMode + PlayMode) and the full Windows build/manual checklist in a licensed editor session; if any failures occur, fix and append a final dated hotfix entry before upload.
+
+### 2026-03-26 - Final development arc summary (submission)
+
+- **Area:** Project wrap-up
+- **Reason:** Jam moderation requires a concise record of how the shipped game evolved from initial concept to final build-ready state.
+- **Change:** Consolidated arc from early single-run prototype through progression pivot (Stage A), runtime grid/session parameterization (Stage B), app-level flow state machine (Stage C), full menu/result UI bindings (Stage D), and gameplay/readability polish hooks (Stage E), culminating in Stage F verification and documentation pass.
+- **Impact:** The shipped project preserves the core camera-relative maze mechanic while adding level progression, persistent scoring, and a complete start-to-result loop suitable for jam submission.
+- **Follow-up:** Submit Windows build package and include known post-jam improvements list (orientation cube RT, wipe transitions, optional stretch features) separately from jam-scored scope.

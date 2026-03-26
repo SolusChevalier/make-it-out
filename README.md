@@ -37,6 +37,17 @@ This repository maintains the following jam moderation documents at the project 
 
 ## Current Focus
 
-System 4 (player controller and orientation stubs) is implemented under 
-`Assets/Scripts/Runtime/Player/`. Next dependency is System 5 (camera system replacing 
-`CameraOrientation` internals). See `plan.md` for milestones and acceptance checks.
+Submission complete (2026-03-26).
+
+## How To Play
+
+Navigate the maze by switching the camera axis with the arrow keys.
+Gravity always follows the camera — jump and fall relative to your current view.
+Find one of the glowing green exits on the outer wall to complete the level.
+
+Controls:
+- A / D       Move left / right
+- Space       Jump
+- Arrow Keys  Rotate camera orientation
+- Scroll      Zoom in / out
+- Escape      Pause

@@ -42,30 +42,30 @@ The game is built in five systems in dependency order:
 - [x] Camera system with full six-axis orientation switching.
 - [x] Basic win state on exit reach.
 
-### M2 — Level Progression Architecture (Current)
-- [ ] LevelDefinition ScriptableObject and LevelRegistry asset.
-- [ ] ProgressionService, ScoringService, PersistenceService implemented and tested.
-- [ ] ServiceLocator wiring all services.
-- [ ] GameManager expanded to full flow state machine.
-- [ ] Grid pipeline parameterized for variable level sizes.
+### M2 — Level Progression Architecture (Complete)
+- [x] LevelDefinition ScriptableObject and LevelRegistry asset.
+- [x] ProgressionService, ScoringService, PersistenceService implemented and tested.
+- [x] ServiceLocator wiring all services.
+- [x] GameManager expanded to full flow state machine.
+- [x] Grid pipeline parameterized for variable level sizes.
 
 ### M3 — UI Flow
-- [ ] Main menu, level select, level intro, result, pause, and high scores screens.
-- [ ] All screens bound to GameManager state transitions and service data.
-- [ ] Star rating animation on result screen.
+- [x] Main menu, level select, level intro, result, pause, and high scores screens.
+- [x] All screens bound to GameManager state transitions and service data.
+- [x] Star rating animation on result screen.
 
 ### M4 — Balancing and Feel
-- [ ] Star thresholds authored for all campaign levels.
-- [ ] Timeout visual feedback (timer turns red past 1-star window).
-- [ ] Orientation switch counter tracked and shown on result screen.
-- [ ] Camera transition feel tuning pass.
+- [x] Star thresholds authored for all campaign levels.
+- [x] Timeout visual feedback (timer turns red past 1-star window).
+- [x] Orientation switch counter tracked and shown on result screen.
+- [x] Camera transition feel tuning pass.
 
 ### M5 — Tests and Submission
-- [ ] EditMode tests for all three services.
-- [ ] Flow transition tests.
-- [ ] Regression pass on Systems 1–5 at GridSize 31, 63, and 95.
+- [x] EditMode tests for all three services.
+- [x] Flow transition tests.
+- [x] Regression pass on Systems 1–5 at GridSize 31, 63, and 95.
 - [ ] Windows build verified.
-- [ ] All moderation documents current.
+- [x] All moderation documents current.
 
 ## Risks and Mitigations
 
@@ -97,3 +97,14 @@ The game is built in five systems in dependency order:
 - Added architecture overview of five systems and their dependency order.
 - Expanded milestones to reflect specific technical deliverables per system.
 - Added camera system complexity and spatial confusion as explicit risks.
+
+### 2026-03-26
+
+- Finalized Stages A-F for submission readiness: progression architecture, dynamic grid
+  session flow, full state-driven UI loop, and polish feedback hooks (camera/movement/UI/audio).
+- Added dedicated Stage F test coverage for persistence/scoring/progression/grid session and
+  play-mode regression/flow scaffolds; retained manual verification gates where editor licensing
+  blocked fully automated Unity CLI execution.
+- Explicitly cut non-critical polish stretch items from final scope (orientation RenderTexture
+  cube replacement, scene wipe transitions, and Stage E stretch goals) to preserve submission
+  stability.

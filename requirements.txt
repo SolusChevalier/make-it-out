@@ -76,3 +76,10 @@ Last updated: 2026-03-25
 - All three are instantiated and owned exclusively by ServiceLocator.
 - No MonoBehaviour outside ServiceLocator instantiates these services directly.
 - All services must be independently unit-testable without a running Unity scene.
+
+[Shipped]
+- Final supported runtime grid size range: odd values 15-127 via GridSession.
+- Shipped authored campaign level count: 5 (`level_001` through `level_005`).
+- Progression loop shipped: MainMenu -> LevelSelect -> LevelIntro -> Loading -> Playing -> LevelResult.
+- Platform verified in repository configuration: Windows x86_64 build target and scene order
+  Bootstrap (0), MainMenu (1), Game (2).

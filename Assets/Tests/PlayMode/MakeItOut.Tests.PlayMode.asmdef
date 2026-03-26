@@ -1,10 +1,13 @@
 {
-    "name": "MakeItOut.EditModeTests",
+    "name": "MakeItOut.Tests.PlayMode",
     "references": [
         "MakeItOut.Runtime"
     ],
     "includePlatforms": [
-        "Editor"
+        "Editor",
+        "WindowsStandalone64",
+        "LinuxStandalone64",
+        "OSXStandalone"
     ],
     "excludePlatforms": [],
     "allowUnsafeCode": false,
