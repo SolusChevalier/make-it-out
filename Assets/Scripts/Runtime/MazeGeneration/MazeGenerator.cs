@@ -2,6 +2,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using MakeItOut.Runtime.GridSystem;
+using MakeItOut.Runtime.Progression;
 using MakeItOut.Runtime.Player;
 using Unity.Collections;
 using Unity.Jobs;
@@ -45,14 +46,22 @@ namespace MakeItOut.Runtime.MazeGeneration
             Instance = this;
         }
 
-        public void StartGeneration(int seed)
+        public void StartGeneration(LevelDefinition level, int resolvedSeed)
         {
+            if (level == null)
+                throw new ArgumentNullException(nameof(level));
+
+            if (GridSession.GridSize != level.GridSize)
+            {
+                Debug.LogWarning("GridSession.GridSize does not match level.GridSize. Ensure GridSession.Initialise is called before StartGeneration.");
+            }
+
             if (_generationCoroutine != null)
             {
                 StopCoroutine(_generationCoroutine);
             }
 
-            _generationCoroutine = StartCoroutine(GenerationCoroutine(seed));
+            _generationCoroutine = StartCoroutine(GenerationCoroutine(resolvedSeed));
         }
 
         public void ReportProgress(float value)
@@ -74,6 +83,7 @@ namespace MakeItOut.Runtime.MazeGeneration
         private MazeGenerationSnapshot GenerateInternal(int seed, bool runEditorValidation)
         {
             Progress = 0f;
+            int totalCells = GridSession.GridSize * GridSession.GridSize * GridSession.GridSize;
 
             NativeArray<byte> blockGrid = default;
             NativeArray<byte> featureGrid = default;
@@ -85,9 +95,9 @@ namespace MakeItOut.Runtime.MazeGeneration
 
             try
             {
-                blockGrid = new NativeArray<byte>(GridConfig.TotalCells, Allocator.TempJob);
-                featureGrid = new NativeArray<byte>(GridConfig.TotalCells, Allocator.TempJob);
-                visited = new NativeArray<bool>(GridConfig.TotalCells, Allocator.TempJob);
+                blockGrid = new NativeArray<byte>(totalCells, Allocator.TempJob);
+                featureGrid = new NativeArray<byte>(totalCells, Allocator.TempJob);
+                visited = new NativeArray<bool>(totalCells, Allocator.TempJob);
 
                 InitialiseGridJob initJob = new InitialiseGridJob
                 {
@@ -95,7 +105,7 @@ namespace MakeItOut.Runtime.MazeGeneration
                     featureGrid = featureGrid,
                     visited = visited,
                 };
-                JobHandle initHandle = initJob.Schedule(GridConfig.TotalCells, 64);
+                JobHandle initHandle = initJob.Schedule(totalCells, 64);
                 initHandle.Complete();
                 Progress = 0.1f;
 
@@ -105,7 +115,7 @@ namespace MakeItOut.Runtime.MazeGeneration
                 {
                     blockGrid = blockGrid,
                     visited = visited,
-                    GridSize = GridConfig.GridSize,
+                    GridSize = GridSession.GridSize,
                     Seed = (uint)seed,
                 };
                 JobHandle carveHandle = carveJob.Schedule();
@@ -122,9 +132,9 @@ namespace MakeItOut.Runtime.MazeGeneration
                 PlaceExits(blockGrid, featureGrid, seed, _exitWorldPositions);
                 Progress = 0.9f;
 
-                managedBlockGrid = new byte[GridConfig.TotalCells];
-                managedFeatureGrid = new byte[GridConfig.TotalCells];
-                for (int i = 0; i < GridConfig.TotalCells; i++)
+                managedBlockGrid = new byte[totalCells];
+                managedFeatureGrid = new byte[totalCells];
+                for (int i = 0; i < totalCells; i++)
                 {
                     managedBlockGrid[i] = blockGrid[i];
                     managedFeatureGrid[i] = featureGrid[i];
@@ -140,11 +150,6 @@ namespace MakeItOut.Runtime.MazeGeneration
 #endif
 
                 Progress = 0.95f;
-                if (GameManager.Instance != null)
-                {
-                    GameManager.Instance.NotifyGenerationComplete();
-                }
-
                 OnGenerationComplete?.Invoke();
             }
             finally
@@ -202,7 +207,7 @@ namespace MakeItOut.Runtime.MazeGeneration
         {
             int carvedCount = 0;
             System.Random random = new System.Random(seed);
-            int size = GridConfig.GridSize;
+            int size = GridSession.GridSize;
 
             for (int z = 1; z < size - 1; z++)
             {
@@ -247,7 +252,7 @@ namespace MakeItOut.Runtime.MazeGeneration
 
         private static void PlaceLadders(NativeArray<byte> blockGrid, NativeArray<byte> featureGrid)
         {
-            int size = GridConfig.GridSize;
+            int size = GridSession.GridSize;
             for (int z = 1; z < size - 1; z++)
             {
                 for (int x = 1; x < size - 1; x++)
@@ -310,7 +315,7 @@ namespace MakeItOut.Runtime.MazeGeneration
 
         private static void PlaceStairs(NativeArray<byte> blockGrid, NativeArray<byte> featureGrid)
         {
-            int size = GridConfig.GridSize;
+            int size = GridSession.GridSize;
             for (int z = 1; z < size - 1; z++)
             {
                 for (int y = 1; y < size - 2; y++)
@@ -354,7 +359,7 @@ namespace MakeItOut.Runtime.MazeGeneration
 
         private static void PlaceHoles(NativeArray<byte> blockGrid, NativeArray<byte> featureGrid)
         {
-            int size = GridConfig.GridSize;
+            int size = GridSession.GridSize;
             for (int z = 1; z < size - 1; z++)
             {
                 for (int y = 2; y < size - 1; y++)
@@ -399,7 +404,7 @@ namespace MakeItOut.Runtime.MazeGeneration
 
         private static List<ExitCandidate> CollectExitCandidates(NativeArray<byte> blockGrid)
         {
-            int size = GridConfig.GridSize;
+            int size = GridSession.GridSize;
             List<ExitCandidate> candidates = new List<ExitCandidate>();
 
             for (int z = 1; z < size - 1; z++)
@@ -451,7 +456,7 @@ namespace MakeItOut.Runtime.MazeGeneration
 
         private static List<ExitCandidate> SelectExitCandidates(List<ExitCandidate> candidates)
         {
-            int minDistance = GridConfig.GridSize / 3;
+            int minDistance = GridSession.GridSize / 3;
             List<ExitCandidate> selected = new List<ExitCandidate>(3);
             HashSet<int> usedFaces = new HashSet<int>();
 
@@ -520,9 +525,9 @@ namespace MakeItOut.Runtime.MazeGeneration
 
         private static byte GetBlock(NativeArray<byte> grid, int x, int y, int z)
         {
-            if (x < 0 || x >= GridConfig.GridSize ||
-                y < 0 || y >= GridConfig.GridSize ||
-                z < 0 || z >= GridConfig.GridSize)
+            if (x < 0 || x >= GridSession.GridSize ||
+                y < 0 || y >= GridSession.GridSize ||
+                z < 0 || z >= GridSession.GridSize)
             {
                 return BlockType.Solid;
             }
@@ -572,7 +577,7 @@ namespace MakeItOut.Runtime.MazeGeneration
 
         private static int FloodFillReachableAir(byte[] blockGrid, Vector3Int start)
         {
-            int size = GridConfig.GridSize;
+            int size = GridSession.GridSize;
             bool[] visited = new bool[blockGrid.Length];
             Queue<Vector3Int> queue = new Queue<Vector3Int>();
             queue.Enqueue(start);
@@ -664,7 +669,7 @@ namespace MakeItOut.Runtime.MazeGeneration
 
         private static int GetFaceId(Vector3Int pos)
         {
-            int max = GridConfig.GridSize - 1;
+            int max = GridSession.GridSize - 1;
             if (pos.x == 0) return 0;
             if (pos.x == max) return 1;
             if (pos.y == 0) return 2;
@@ -676,7 +681,7 @@ namespace MakeItOut.Runtime.MazeGeneration
 
         private static void ValidateBoundary(byte[] blockGrid, byte[] featureGrid)
         {
-            int max = GridConfig.GridSize - 1;
+            int max = GridSession.GridSize - 1;
             for (int z = 0; z <= max; z++)
             {
                 for (int y = 0; y <= max; y++)

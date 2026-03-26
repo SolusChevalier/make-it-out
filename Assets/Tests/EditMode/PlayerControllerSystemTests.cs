@@ -1,5 +1,6 @@
 using System.Reflection;
 using MakeItOut.Runtime.GridSystem;
+using MakeItOut.Runtime.Progression;
 using MakeItOut.Runtime.Player;
 using NUnit.Framework;
 using UnityEngine;
@@ -11,6 +12,8 @@ namespace MakeItOut.Tests.EditMode
         [SetUp]
         public void SetUp()
         {
+            GridSession.Initialise(CreateLevel(63), 0);
+            WorldGrid.Instance.Initialise(GridSession.GridSize);
             WorldGrid.Instance.ResetForGeneration();
         }
 
@@ -86,6 +89,19 @@ namespace MakeItOut.Tests.EditMode
             Assert.IsFalse(pc.IsSwitching);
 
             Object.DestroyImmediate(go);
+        }
+
+        private static LevelDefinition CreateLevel(int gridSize)
+        {
+            return new GeneratedLevelDefinition
+            {
+                LevelId = "player_tests",
+                DisplayName = "Player Tests",
+                GridSize = gridSize,
+                SeedMode = SeedMode.Fixed,
+                FixedSeed = 0,
+                StarThresholds = new[] { 60f, 120f, 180f, 240f },
+            };
         }
     }
 }

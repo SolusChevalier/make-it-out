@@ -1,4 +1,5 @@
 using MakeItOut.Runtime.GridSystem;
+using MakeItOut.Runtime.Progression;
 using NUnit.Framework;
 using UnityEngine;
 
@@ -9,6 +10,8 @@ namespace MakeItOut.Tests.EditMode
         [SetUp]
         public void SetUp()
         {
+            GridSession.Initialise(CreateLevel(63), 123);
+            WorldGrid.Instance.Initialise(GridSession.GridSize);
             WorldGrid.Instance.ResetForGeneration();
         }
 
@@ -18,19 +21,19 @@ namespace MakeItOut.Tests.EditMode
             Assert.AreEqual(BlockType.Solid, WorldGrid.Instance.GetBlock(-1, 0, 0));
             Assert.AreEqual(BlockType.Solid, WorldGrid.Instance.GetBlock(0, -1, 0));
             Assert.AreEqual(BlockType.Solid, WorldGrid.Instance.GetBlock(0, 0, -1));
-            Assert.AreEqual(BlockType.Solid, WorldGrid.Instance.GetBlock(GridConfig.GridSize, 0, 0));
-            Assert.AreEqual(BlockType.Solid, WorldGrid.Instance.GetBlock(0, GridConfig.GridSize, 0));
-            Assert.AreEqual(BlockType.Solid, WorldGrid.Instance.GetBlock(0, 0, GridConfig.GridSize));
+            Assert.AreEqual(BlockType.Solid, WorldGrid.Instance.GetBlock(GridSession.GridSize, 0, 0));
+            Assert.AreEqual(BlockType.Solid, WorldGrid.Instance.GetBlock(0, GridSession.GridSize, 0));
+            Assert.AreEqual(BlockType.Solid, WorldGrid.Instance.GetBlock(0, 0, GridSession.GridSize));
         }
 
         [Test]
         public void WorldToGrid_GridToWorld_RoundTrip_ForAllValidCells()
         {
-            for (int z = 0; z < GridConfig.GridSize; z++)
+            for (int z = 0; z < GridSession.GridSize; z++)
             {
-                for (int y = 0; y < GridConfig.GridSize; y++)
+                for (int y = 0; y < GridSession.GridSize; y++)
                 {
-                    for (int x = 0; x < GridConfig.GridSize; x++)
+                    for (int x = 0; x < GridSession.GridSize; x++)
                     {
                         Vector3Int gridPos = new Vector3Int(x, y, z);
                         Vector3 worldPos = WorldGrid.Instance.GridToWorld(gridPos);
@@ -44,7 +47,7 @@ namespace MakeItOut.Tests.EditMode
         [Test]
         public void GridIndex_ToIndexFromIndex_RoundTrip_ForAllIndices()
         {
-            int total = GridConfig.GridSize * GridConfig.GridSize * GridConfig.GridSize;
+            int total = GridSession.GridSize * GridSession.GridSize * GridSession.GridSize;
             for (int i = 0; i < total; i++)
             {
                 Vector3Int gridPos = GridIndex.FromIndex(i);
@@ -56,7 +59,7 @@ namespace MakeItOut.Tests.EditMode
         [Test]
         public void ChunkMeshBuilder_CullsInteriorFace_ForAdjacentSolidBlocks()
         {
-            int c = GridConfig.GridSize / 2;
+            int c = GridSession.GridSize / 2;
             WorldGrid.Instance.SetBlock(c - 1, c, c, BlockType.Solid);
             WorldGrid.Instance.SetBlock(c, c, c, BlockType.Solid);
 
@@ -71,9 +74,9 @@ namespace MakeItOut.Tests.EditMode
         [Test]
         public void ChunkManager_ActivatesNearbyChunks_AndDeactivatesFarChunks()
         {
-            int c = GridConfig.GridSize / 2;
+            int c = GridSession.GridSize / 2;
             WorldGrid.Instance.SetBlock(c, c, c, BlockType.Solid);
-            WorldGrid.Instance.SetBlock(GridConfig.GridSize - 2, GridConfig.GridSize - 2, GridConfig.GridSize - 2, BlockType.Solid);
+            WorldGrid.Instance.SetBlock(GridSession.GridSize - 2, GridSession.GridSize - 2, GridSession.GridSize - 2, BlockType.Solid);
 
             GameObject chunkRoot = new GameObject("ChunkManagerTest");
             ChunkManager manager = chunkRoot.AddComponent<ChunkManager>();
@@ -88,15 +91,28 @@ namespace MakeItOut.Tests.EditMode
             Assert.IsTrue(nearChunk.IsActive);
 
             Vector3Int farGridPos = new Vector3Int(
-                GridConfig.GridSize - 1,
-                GridConfig.GridSize - 1,
-                GridConfig.GridSize - 1);
+                GridSession.GridSize - 1,
+                GridSession.GridSize - 1,
+                GridSession.GridSize - 1);
 
             ChunkData farChunk = manager.GetChunk(farGridPos);
             Assert.IsNotNull(farChunk);
             Assert.IsFalse(farChunk.IsActive);
 
             Object.DestroyImmediate(chunkRoot);
+        }
+
+        private static LevelDefinition CreateLevel(int gridSize)
+        {
+            return new GeneratedLevelDefinition
+            {
+                LevelId = "grid_chunk_tests",
+                DisplayName = "Grid Chunk Tests",
+                GridSize = gridSize,
+                SeedMode = SeedMode.Fixed,
+                FixedSeed = 123,
+                StarThresholds = new[] { 60f, 120f, 180f, 240f },
+            };
         }
     }
 }

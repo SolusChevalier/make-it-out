@@ -1,4 +1,5 @@
 using System;
+using MakeItOut.Runtime.Flow;
 using MakeItOut.Runtime.Player;
 using NUnit.Framework;
 using UnityEngine;
@@ -34,10 +35,10 @@ namespace MakeItOut.Tests.EditMode
             GameObject go = new GameObject("GameManager_Test");
             GameManager manager = go.AddComponent<GameManager>();
 
-            Assert.AreEqual(GameState.Loading, manager.CurrentState);
+            Assert.AreEqual(GameState.Boot, manager.CurrentState);
             manager.TriggerWin();
 
-            Assert.AreEqual(GameState.Loading, manager.CurrentState);
+            Assert.AreEqual(GameState.Boot, manager.CurrentState);
         }
 
         [Test]
@@ -46,10 +47,10 @@ namespace MakeItOut.Tests.EditMode
             GameObject go = new GameObject("GameManager_Test");
             GameManager manager = go.AddComponent<GameManager>();
 
-            Assert.AreEqual(GameState.Loading, manager.CurrentState);
+            Assert.AreEqual(GameState.Boot, manager.CurrentState);
             manager.TriggerFail();
 
-            Assert.AreEqual(GameState.Loading, manager.CurrentState);
+            Assert.AreEqual(GameState.Boot, manager.CurrentState);
         }
     }
 }

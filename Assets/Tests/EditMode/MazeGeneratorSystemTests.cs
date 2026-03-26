@@ -2,6 +2,7 @@ using System.Collections.Generic;
 using System.Linq;
 using MakeItOut.Runtime.GridSystem;
 using MakeItOut.Runtime.MazeGeneration;
+using MakeItOut.Runtime.Progression;
 using NUnit.Framework;
 using UnityEngine;
 
@@ -9,6 +10,14 @@ namespace MakeItOut.Tests.EditMode
 {
     public class MazeGeneratorSystemTests
     {
+        [SetUp]
+        public void SetUp()
+        {
+            GridSession.Initialise(CreateLevel(63), 2048);
+            WorldGrid.Instance.Initialise(GridSession.GridSize);
+            WorldGrid.Instance.ResetForGeneration();
+        }
+
         [Test]
         public void Generation_IsReproducible_WithSameSeed()
         {
@@ -31,7 +40,7 @@ namespace MakeItOut.Tests.EditMode
             MazeGenerator generator = go.AddComponent<MazeGenerator>();
             MazeGenerationSnapshot snapshot = generator.GenerateSynchronouslyForTests(2048);
 
-            int size = GridConfig.GridSize;
+            int size = GridSession.GridSize;
             int c = size / 2;
             Vector3Int centre = new Vector3Int(c, c, c);
             Vector3Int[] centreRoom =
@@ -104,7 +113,7 @@ namespace MakeItOut.Tests.EditMode
 
         private static bool IsBoundarySolidExceptExits(byte[] blockGrid, byte[] featureGrid)
         {
-            int size = GridConfig.GridSize;
+            int size = GridSession.GridSize;
             for (int z = 0; z < size; z++)
             {
                 for (int y = 0; y < size; y++)
@@ -131,7 +140,7 @@ namespace MakeItOut.Tests.EditMode
 
         private static bool AllAirCellsReachable(byte[] blockGrid, Vector3Int start)
         {
-            int size = GridConfig.GridSize;
+            int size = GridSession.GridSize;
             bool[] visited = new bool[blockGrid.Length];
             Queue<Vector3Int> queue = new Queue<Vector3Int>();
             int startIndex = GridIndex.ToIndex(start.x, start.y, start.z);
@@ -179,13 +188,13 @@ namespace MakeItOut.Tests.EditMode
 
         private static bool IsBoundary(int x, int y, int z)
         {
-            int max = GridConfig.GridSize - 1;
+            int max = GridSession.GridSize - 1;
             return x == 0 || y == 0 || z == 0 || x == max || y == max || z == max;
         }
 
         private static int GetFaceId(Vector3Int pos)
         {
-            int max = GridConfig.GridSize - 1;
+            int max = GridSession.GridSize - 1;
             if (pos.x == 0) return 0;
             if (pos.x == max) return 1;
             if (pos.y == 0) return 2;
@@ -193,6 +202,19 @@ namespace MakeItOut.Tests.EditMode
             if (pos.z == 0) return 4;
             if (pos.z == max) return 5;
             return -1;
+        }
+
+        private static LevelDefinition CreateLevel(int gridSize)
+        {
+            return new GeneratedLevelDefinition
+            {
+                LevelId = "maze_tests",
+                DisplayName = "Maze Tests",
+                GridSize = gridSize,
+                SeedMode = SeedMode.Fixed,
+                FixedSeed = 2048,
+                StarThresholds = new[] { 60f, 120f, 180f, 240f },
+            };
         }
     }
 }

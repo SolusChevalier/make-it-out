@@ -1,5 +1,6 @@
 using System.Reflection;
 using MakeItOut.Runtime.GridSystem;
+using MakeItOut.Runtime.Progression;
 using MakeItOut.Runtime.Player;
 using NUnit.Framework;
 using UnityEngine;
@@ -86,6 +87,8 @@ namespace MakeItOut.Tests.EditMode
         [Test]
         public void ChunkManager_GetChunkObject_ReturnsRegisteredChunkObject()
         {
+            GridSession.Initialise(CreateLevel(63), 0);
+            WorldGrid.Instance.Initialise(GridSession.GridSize);
             WorldGrid.Instance.ResetForGeneration();
 
             GameObject root = new GameObject("ChunkManager_Test");
@@ -106,6 +109,19 @@ namespace MakeItOut.Tests.EditMode
 
             Object.DestroyImmediate(chunkObject);
             Object.DestroyImmediate(root);
+        }
+
+        private static LevelDefinition CreateLevel(int gridSize)
+        {
+            return new GeneratedLevelDefinition
+            {
+                LevelId = "camera_tests",
+                DisplayName = "Camera Tests",
+                GridSize = gridSize,
+                SeedMode = SeedMode.Fixed,
+                FixedSeed = 0,
+                StarThresholds = new[] { 60f, 120f, 180f, 240f },
+            };
         }
 
         private static CameraController CreateControllerForOrientationTests()

@@ -134,6 +134,8 @@ namespace MakeItOut.Runtime.Player
             _transitionProgress = 0f;
             _isTransitioning = true;
 
+            GameManager.Instance?.NotifyOrientationSwitch();
+
             if (_playerController != null)
             {
                 _playerController.OnCameraSwitchStart();

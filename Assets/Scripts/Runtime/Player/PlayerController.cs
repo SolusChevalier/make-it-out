@@ -7,6 +7,8 @@ namespace MakeItOut.Runtime.Player
     [RequireComponent(typeof(CharacterController))]
     public sealed class PlayerController : MonoBehaviour
     {
+        public static PlayerController Instance { get; private set; }
+
         [Header("Movement")]
         public float MoveSpeed = 7f;
         public float JumpForce = 9f;
@@ -41,7 +43,22 @@ namespace MakeItOut.Runtime.Player
 
         private void Awake()
         {
+            if (Instance != null && Instance != this)
+            {
+                Destroy(gameObject);
+                return;
+            }
+
+            Instance = this;
             _cc = GetComponent<CharacterController>();
+        }
+
+        private void OnDestroy()
+        {
+            if (Instance == this)
+            {
+                Instance = null;
+            }
         }
 
         private void Update()
@@ -170,6 +187,14 @@ namespace MakeItOut.Runtime.Player
         public void OnCameraSwitchComplete()
         {
             _isSwitching = false;
+        }
+
+        public void Teleport(Vector3 worldPosition)
+        {
+            _cc.enabled = false;
+            transform.position = worldPosition;
+            _cc.enabled = true;
+            _velocity = Vector3.zero;
         }
 
         private IEnumerator SmoothStepUp(Vector3 stepCamUp)

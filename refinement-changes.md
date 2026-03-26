@@ -110,3 +110,54 @@ Track meaningful project changes as the jam progresses.
 - **Change:** Extended `HudManager` to auto-build a Screen Space Overlay canvas hierarchy when references are unassigned (loading/hud/win/fail panels, loading slider/label, timer/orientation labels, win/fail labels, restart buttons, event system), while preserving existing assigned references if already wired. Added `HudManagerCanvasTests` to validate that missing references are populated and the panel parents attach to the overlay canvas.
 - **Impact:** New runs can render core System 6 UI out of the box in development scenes, reducing setup friction and ensuring restart controls exist in minimally configured scenes.
 - **Follow-up:** Re-run Unity EditMode tests once project lock contention is cleared, then manually validate visual placement/padding in the target gameplay scene and tweak anchors/font sizes if desired.
+
+### 2026-03-26
+
+**Pivot: Single-run loop replaced with mobile-style level progression**
+
+Rationale: The single-run design lacked motivational structure. Players had no
+incremental goals, no sense of progression, and no reason to replay. The pivot
+introduces a level-based loop with a main menu, level select, timed star scoring,
+and persistent best times. The core maze and camera-relative movement systems are
+unchanged. All new systems are additive — existing System 1–6 code is refactored
+only where parameterization is required (grid sizing in Stage B).
+
+### 2026-03-26 - Stage A progression contracts and service wiring
+
+- **Area:** Systems / Data / Docs
+- **Reason:** Stage A establishes progression/scoring/persistence contracts and authored level data before runtime flow integration.
+- **Change:** Added progression domain models (`LevelDefinition`, `GeneratedLevelDefinition`), ScriptableObject adapters (`LevelDefinitionAsset`, `LevelRegistryAsset`), services (`ProgressionService`, `ScoringService`, `PersistenceService`), `ServiceLocator` MonoBehaviour, authored five campaign level assets plus ordered level registry asset, and wired `ServiceLocator` into DevEnv bootstrap scenes. Updated concept/plan/requirements docs for the level-based pivot.
+- **Impact:** Project now has a stable data/service contract surface for Stage B+ while preserving existing System 1–6 gameplay behavior.
+- **Follow-up:** Add Stage B grid-size parameterization and service-backed flow state integration with EditMode coverage for progression/scoring/persistence acceptance checks.
+
+### 2026-03-26 - Stage A acceptance validation coverage
+
+- **Area:** QA / Tests
+- **Reason:** Stage A acceptance criteria required executable checks for service contracts and authored progression data.
+- **Change:** Added `ProgressionServicesTests` EditMode suite covering registry/asset ordering, unlock defaults, persistence best-result retention, scoring threshold outputs, finite-time minimum star guarantees, and scaled-level grid growth/oddness checks.
+- **Impact:** Service-level acceptance criteria are now codified as repeatable tests rather than one-off manual checks.
+- **Follow-up:** Run the suite through Unity Test Runner in a licensed editor session (batchmode in this environment failed before test execution due Unity Licensing token validation).
+
+### 2026-03-26 - Stage B runtime grid parameterization
+
+- **Area:** Systems / Runtime architecture
+- **Reason:** Stage B required moving maze/chunk/grid sizing from compile-time constants to per-level runtime session state.
+- **Change:** Split static constants from session state (`GridConfig` + `GridSession`), added seed resolution utility (`SeedResolver`), refactored `WorldGrid` to explicit runtime `Initialise(gridSize)` allocation with pre-init guards, parameterized `MazeGenerator` and `ChunkMeshBuilder`/`ChunkManager` around `GridSession.GridSize` and `GridSession.ChunksPerAxis`, and rewired `DevSceneBootstrap` to execute the full initialise/generate/rebuild sequence using `LevelDefinition`.
+- **Impact:** The generation and chunk pipeline is now level-size driven (odd sizes 15-127) instead of hardcoded to 63, enabling Stage C flow work without changing Systems 1-6 behavior logic.
+- **Follow-up:** Run Stage B acceptance checks in an authenticated Unity editor session for multi-size play-mode validation (15/31/63+) and chunk clear hierarchy assertions.
+
+### 2026-03-26 - Stage C game flow state machine wiring
+
+- **Area:** Flow / Runtime architecture / Scenes
+- **Reason:** Stage C required replacing run-local state handling with full app-level flow (boot, menus, load, play, pause, result, progression navigation) and centralizing level load orchestration.
+- **Change:** Finalized flow-layer contracts (`GameState`, `ActiveLevelContext`, `LevelLoader`, `BootstrapSceneLoader`) and wired `GameManager` to progression/scoring/persistence services through `ServiceLocator`, including pause/resume timing, result persistence, retry-with-same-seed, next-level unlock checks, and orientation-switch tracking. Updated guard logic so invalid transitions are rejected (logged) without state mutation. Kept `DevSceneBootstrap` as a quick-start shortcut that routes through `GameManager` calls rather than owning generation setup.
+- **Impact:** Flow transitions now behave as an application state machine instead of ad hoc scene logic, and gameplay result data is consistently captured in `ActiveLevelContext` and persisted via services.
+- **Follow-up:** Run `MakeItOut.EditorTools.FlowSceneGenerator.CreateFlowScenes` with Unity closed in other instances to regenerate Bootstrap/MainMenu/Game scenes and update build settings order, then perform cold-start and panel-state acceptance checks in-editor.
+
+### 2026-03-26 - Stage D UI screens and flow bindings
+
+- **Area:** UI / Flow integration
+- **Reason:** Stage D required replacing placeholder HUD stubs with full panel-based UI bound to the Stage C state machine so the complete menu-to-result loop is playable from cold start.
+- **Change:** Added shared UI building blocks (`UiStyle`, `UiButton`, `TimerDisplay`, `StarRatingDisplay`) and panel controllers for loading, main menu, level select, level intro, in-run HUD, pause, result, and high scores. Reworked `HudManager` to state-drive panel visibility and refresh level-select data on entry. Added runtime fallback panel/canvas construction per scene to ensure Stage D UI works even when scene references are not manually wired yet. Updated `HudManagerCanvasTests` for the new manager contract.
+- **Impact:** UI now reads game/service state one-way and exposes the complete flow (menu/select/intro/load/play/result/high-scores) without embedding gameplay logic in panels.
+- **Follow-up:** In Unity Editor, run a full manual Stage D acceptance pass (cold start through at least two completions) and re-run flow scene generation if you want authored scene hierarchies instead of runtime fallback construction.

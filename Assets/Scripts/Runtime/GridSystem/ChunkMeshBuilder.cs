@@ -103,7 +103,8 @@ namespace MakeItOut.Runtime.GridSystem
         public static Mesh BuildChunkMesh(Vector3Int chunkCoord)
         {
             byte[] blockCopy = WorldGrid.Instance.CopyBlockGrid();
-            NativeArray<byte> native = new NativeArray<byte>(GridConfig.TotalCells, Allocator.TempJob);
+            int totalCells = GridSession.GridSize * GridSession.GridSize * GridSession.GridSize;
+            NativeArray<byte> native = new NativeArray<byte>(totalCells, Allocator.TempJob);
             native.CopyFrom(blockCopy);
             Mesh mesh = BuildSingleChunkFromNative(chunkCoord, native);
             native.Dispose();
@@ -123,9 +124,11 @@ namespace MakeItOut.Runtime.GridSystem
 
         private static void BuildAllChunksInternal(ChunkManager manager, bool asyncBake)
         {
-            int totalChunks = GridConfig.ChunksPerAxis * GridConfig.ChunksPerAxis * GridConfig.ChunksPerAxis;
+            int chunksPerAxis = GridSession.ChunksPerAxis;
+            int totalChunks = chunksPerAxis * chunksPerAxis * chunksPerAxis;
             byte[] blockGridManaged = WorldGrid.Instance.CopyBlockGrid();
-            NativeArray<byte> blockGridNative = new NativeArray<byte>(GridConfig.TotalCells, Allocator.TempJob);
+            int totalCells = GridSession.GridSize * GridSession.GridSize * GridSession.GridSize;
+            NativeArray<byte> blockGridNative = new NativeArray<byte>(totalCells, Allocator.TempJob);
             blockGridNative.CopyFrom(blockGridManaged);
 
             NativeList<float3>[] chunkVertices = new NativeList<float3>[totalChunks];
@@ -145,13 +148,13 @@ namespace MakeItOut.Runtime.GridSystem
                 NativeArray<JobHandle> handles = new NativeArray<JobHandle>(totalChunks, Allocator.Temp);
                 for (int i = 0; i < totalChunks; i++)
                 {
-                    Vector3Int chunkCoord = ChunkIndexToCoord(i);
+                    Vector3Int chunkCoord = ChunkIndexToCoord(i, chunksPerAxis);
                     handles[i] = new BuildChunkMeshDataJob
                     {
                         BlockGrid = blockGridNative,
                         Vertices = chunkVertices[i],
                         Triangles = chunkTriangles[i],
-                        GridSize = GridConfig.GridSize,
+                        GridSize = GridSession.GridSize,
                         ChunkSize = GridConfig.ChunkSize,
                         ChunkX = chunkCoord.x,
                         ChunkY = chunkCoord.y,
@@ -180,7 +183,7 @@ namespace MakeItOut.Runtime.GridSystem
                         continue;
                     }
 
-                    Vector3Int chunkCoord = ChunkIndexToCoord(i);
+                    Vector3Int chunkCoord = ChunkIndexToCoord(i, chunksPerAxis);
                     GameObject chunkObj = new GameObject($"Chunk_{chunkCoord.x}_{chunkCoord.y}_{chunkCoord.z}");
                     chunkObj.isStatic = true;
                     chunkObj.transform.SetParent(manager.transform, false);
@@ -351,7 +354,7 @@ namespace MakeItOut.Runtime.GridSystem
                     BlockGrid = blockGridNative,
                     Vertices = vertices,
                     Triangles = triangles,
-                    GridSize = GridConfig.GridSize,
+                    GridSize = GridSession.GridSize,
                     ChunkSize = GridConfig.ChunkSize,
                     ChunkX = chunkCoord.x,
                     ChunkY = chunkCoord.y,
@@ -395,11 +398,11 @@ namespace MakeItOut.Runtime.GridSystem
             }
         }
 
-        private static Vector3Int ChunkIndexToCoord(int index)
+        public static Vector3Int ChunkIndexToCoord(int index, int chunksPerAxis)
         {
-            int x = index % GridConfig.ChunksPerAxis;
-            int y = (index / GridConfig.ChunksPerAxis) % GridConfig.ChunksPerAxis;
-            int z = index / (GridConfig.ChunksPerAxis * GridConfig.ChunksPerAxis);
+            int x = index % chunksPerAxis;
+            int y = (index / chunksPerAxis) % chunksPerAxis;
+            int z = index / (chunksPerAxis * chunksPerAxis);
             return new Vector3Int(x, y, z);
         }
 

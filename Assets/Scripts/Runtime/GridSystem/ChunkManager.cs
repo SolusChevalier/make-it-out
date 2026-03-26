@@ -1,4 +1,6 @@
 using System.Collections.Generic;
+using System;
+using System.Collections;
 using MakeItOut.Runtime.MazeGeneration;
 using UnityEngine;
 
@@ -14,7 +16,6 @@ namespace MakeItOut.Runtime.GridSystem
 
         private Dictionary<Vector3Int, ChunkData> _chunks;
         private Dictionary<Vector3Int, GameObject> _chunkObjects;
-        private MazeGenerator _subscribedGenerator;
         private Coroutine _initialiseRoutine;
 
         public int ViewDistanceChunks
@@ -36,25 +37,15 @@ namespace MakeItOut.Runtime.GridSystem
             Instance = this;
         }
 
-        private void OnEnable()
-        {
-            TrySubscribeToGenerationEvent();
-        }
-
-        private void OnDisable()
-        {
-            if (_subscribedGenerator == null)
-            {
-                return;
-            }
-
-            _subscribedGenerator.OnGenerationComplete -= HandleGenerationComplete;
-            _subscribedGenerator = null;
-        }
-
         public void InitialiseAllChunks()
         {
             EnsureDictionaries();
+            int chunksPerAxis = GridSession.ChunksPerAxis;
+            int totalChunks = chunksPerAxis * chunksPerAxis * chunksPerAxis;
+            int totalCells = GridSession.GridSize * GridSession.GridSize * GridSession.GridSize;
+            float gridMegabytes = (totalCells * 2f) / (1024f * 1024f);
+            Debug.Log($"ChunkManager: initialising {totalChunks} chunks for GridSize {GridSession.GridSize} (grid backing ~{gridMegabytes:F1} MB).");
+
             if (Application.isPlaying)
             {
                 if (_initialiseRoutine != null)
@@ -67,6 +58,40 @@ namespace MakeItOut.Runtime.GridSystem
             }
 
             ChunkMeshBuilder.BuildAllChunksImmediate(this);
+        }
+
+        public IEnumerator InitialiseAllChunksCoroutine(Action<float> onProgress)
+        {
+            EnsureDictionaries();
+
+            onProgress?.Invoke(0f);
+            yield return null;
+
+            // Keep the loading panel responsive before heavy work.
+            ChunkMeshBuilder.BuildAllChunksImmediate(this);
+
+            onProgress?.Invoke(1f);
+            yield return null;
+        }
+
+        public void Clear()
+        {
+            EnsureDictionaries();
+            foreach (KeyValuePair<Vector3Int, GameObject> kvp in _chunkObjects)
+            {
+                if (kvp.Value == null)
+                    continue;
+
+                if (Application.isPlaying)
+                    Destroy(kvp.Value);
+                else
+                    DestroyImmediate(kvp.Value);
+            }
+
+            _chunks.Clear();
+            _chunkObjects.Clear();
+
+            Debug.Log("ChunkManager cleared.");
         }
 
         public void UpdateActiveChunks(Vector3Int playerGridPos)
@@ -126,52 +151,13 @@ namespace MakeItOut.Runtime.GridSystem
 
         public void ClearRegisteredChunks()
         {
-            EnsureDictionaries();
-            foreach (GameObject chunkObject in _chunkObjects.Values)
-            {
-                if (chunkObject != null)
-                {
-                    if (Application.isPlaying)
-                    {
-                        Object.Destroy(chunkObject);
-                    }
-                    else
-                    {
-                        Object.DestroyImmediate(chunkObject);
-                    }
-                }
-            }
-
-            _chunks.Clear();
-            _chunkObjects.Clear();
+            Clear();
         }
 
         private void EnsureDictionaries()
         {
             _chunks ??= new Dictionary<Vector3Int, ChunkData>();
             _chunkObjects ??= new Dictionary<Vector3Int, GameObject>();
-        }
-
-        private void TrySubscribeToGenerationEvent()
-        {
-            if (_subscribedGenerator != null)
-            {
-                return;
-            }
-
-            MazeGenerator generator = FindObjectOfType<MazeGenerator>();
-            if (generator == null)
-            {
-                return;
-            }
-
-            generator.OnGenerationComplete += HandleGenerationComplete;
-            _subscribedGenerator = generator;
-        }
-
-        private void HandleGenerationComplete()
-        {
-            InitialiseAllChunks();
         }
 
         public void RebuildFeaturePropInstances()

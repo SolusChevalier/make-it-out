@@ -35,31 +35,37 @@ The game is built in five systems in dependency order:
 
 ## Milestones
 
-### M1 — Playable Core Loop
-- [ ] Loading screen runs generation and shows progress bar.
-- [ ] Player spawns at maze centre and can move, jump, and climb.
-- [ ] Camera switches correctly through all six orientations including upside-down states.
-- [ ] Gravity and jump always follow current camera orientation — no world Y assumptions.
-- [ ] Player can reach an exit and trigger a win state.
-- [ ] Session can be restarted without editor intervention.
+### M1 — Core Loop (Complete)
+- [x] Grid, chunk, and mesh systems operational.
+- [x] Procedural maze generation with Burst jobs.
+- [x] Player controller with camera-relative movement and gravity.
+- [x] Camera system with full six-axis orientation switching.
+- [x] Basic win state on exit reach.
 
-### M2 — Spatial Readability
-- [ ] Transparency pass correctly reveals the player's movement plane through occluding walls.
-- [ ] Exit blocks are clearly visually distinct from maze walls.
-- [ ] Chunk culling keeps frame rate stable while navigating.
-- [ ] Camera transition animation is smooth and does not disorient beyond the intended mechanic.
+### M2 — Level Progression Architecture (Current)
+- [ ] LevelDefinition ScriptableObject and LevelRegistry asset.
+- [ ] ProgressionService, ScoringService, PersistenceService implemented and tested.
+- [ ] ServiceLocator wiring all services.
+- [ ] GameManager expanded to full flow state machine.
+- [ ] Grid pipeline parameterized for variable level sizes.
 
-### M3 — Feel and Feedback
-- [ ] Movement feels responsive and well-tuned — speed, jump height, step-up timing.
-- [ ] Camera switch has satisfying weight and snap.
-- [ ] Minimal UI communicates current orientation and exit proximity without cluttering the view.
-- [ ] Basic audio pass — movement, jump, camera switch, exit found.
+### M3 — UI Flow
+- [ ] Main menu, level select, level intro, result, pause, and high scores screens.
+- [ ] All screens bound to GameManager state transitions and service data.
+- [ ] Star rating animation on result screen.
 
-### M4 — Polish and Submission
-- [ ] Full performance profile pass — generation time, frame rate, memory.
-- [ ] Bug fix pass against all system acceptance criteria.
-- [ ] Build and test on target Windows platform.
-- [ ] All moderation documents current and accurate.
+### M4 — Balancing and Feel
+- [ ] Star thresholds authored for all campaign levels.
+- [ ] Timeout visual feedback (timer turns red past 1-star window).
+- [ ] Orientation switch counter tracked and shown on result screen.
+- [ ] Camera transition feel tuning pass.
+
+### M5 — Tests and Submission
+- [ ] EditMode tests for all three services.
+- [ ] Flow transition tests.
+- [ ] Regression pass on Systems 1–5 at GridSize 31, 63, and 95.
+- [ ] Windows build verified.
+- [ ] All moderation documents current.
 
 ## Risks and Mitigations
 

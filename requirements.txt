@@ -53,3 +53,26 @@ Last updated: 2026-03-25
 - Major scope or priority changes must update plan.md.
 - All NativeArray and NativeList allocations must be disposed — zero JobTempAlloc leak 
   warnings in console before moving between systems.
+
+[Progression]
+- Game is level-based with a main menu, level select, and per-level result screen.
+- Each level is defined by a LevelDefinition asset with GridSize, seed mode, display
+  name, campaign flag, and star time thresholds.
+- A LevelRegistry asset holds the ordered master list of all campaign levels.
+- Levels beyond the campaign are generated programmatically with a deterministic
+  scaling formula.
+- A level is unlocked when the previous level has been completed with at least 1 star.
+- Level 0 is always unlocked.
+
+[Scoring]
+- Each level has 5 star thresholds defined in its LevelDefinition.
+- Completing a level always awards at least 1 star regardless of time.
+- Stars are evaluated by ScoringService — no scoring logic lives in UI or GameManager.
+- Best time and best stars per level are persisted locally via PlayerPrefs.
+- Persistence keys are versioned with a v1_ prefix to allow future migration.
+
+[Services]
+- ProgressionService, ScoringService, and PersistenceService are plain C# classes.
+- All three are instantiated and owned exclusively by ServiceLocator.
+- No MonoBehaviour outside ServiceLocator instantiates these services directly.
+- All services must be independently unit-testable without a running Unity scene.

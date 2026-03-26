@@ -10,11 +10,23 @@ namespace MakeItOut.Runtime.Player
         [Range(0f, 1f)]
         [SerializeField] private float _occluderAlpha = 0.15f;
 
-        private readonly List<Renderer> _currentlyTransparent = new List<Renderer>();
-        private readonly MaterialPropertyBlock _mpb = new MaterialPropertyBlock();
+        private MaterialPropertyBlock _mpb;
+        private List<Renderer> _currentlyTransparent;
+
+        private void Awake()
+        {
+            _mpb = new MaterialPropertyBlock();
+            _currentlyTransparent = new List<Renderer>();
+        }
 
         public void UpdateTransparency(Vector3Int playerGridPos, Quaternion cameraOrientation)
         {
+            if (_mpb == null)
+            {
+                Debug.LogError("TransparencyManager: _mpb is null. Ensure Awake has run.");
+                return;
+            }
+
             RestorePreviouslyTransparentRenderers();
 
             if (WorldGrid.Instance == null || ChunkManager.Instance == null)
@@ -58,6 +70,7 @@ namespace MakeItOut.Runtime.Player
                     continue;
                 }
 
+                _mpb.Clear();
                 renderer.GetPropertyBlock(_mpb);
                 _mpb.SetFloat("_Alpha", _occluderAlpha);
                 renderer.SetPropertyBlock(_mpb);

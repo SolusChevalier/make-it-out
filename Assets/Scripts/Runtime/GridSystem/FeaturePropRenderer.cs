@@ -17,6 +17,11 @@ namespace MakeItOut.Runtime.GridSystem
         private readonly List<Matrix4x4[]> _stairBatches = new List<Matrix4x4[]>();
         private readonly List<Matrix4x4[]> _exitBatches = new List<Matrix4x4[]>();
 
+        private void Start()
+        {
+            ValidateMaterials();
+        }
+
         public void BuildInstanceData()
         {
             _ladderBatches.Clear();
@@ -28,11 +33,11 @@ namespace MakeItOut.Runtime.GridSystem
             List<Matrix4x4> exitMatrices = new List<Matrix4x4>();
 
             Vector3 uniformScale = Vector3.one * GridConfig.BlockSize;
-            for (int z = 0; z < GridConfig.GridSize; z++)
+            for (int z = 0; z < GridSession.GridSize; z++)
             {
-                for (int y = 0; y < GridConfig.GridSize; y++)
+                for (int y = 0; y < GridSession.GridSize; y++)
                 {
-                    for (int x = 0; x < GridConfig.GridSize; x++)
+                    for (int x = 0; x < GridSession.GridSize; x++)
                     {
                         byte feature = WorldGrid.Instance.GetFeature(x, y, z);
                         if (feature == FeatureType.None)
@@ -95,6 +100,24 @@ namespace MakeItOut.Runtime.GridSystem
             for (int i = 0; i < batches.Count; i++)
             {
                 Graphics.DrawMeshInstanced(mesh, 0, material, batches[i]);
+            }
+        }
+
+        private void ValidateMaterials()
+        {
+            if (_ladderMaterial != null && !_ladderMaterial.enableInstancing)
+            {
+                Debug.LogError("FeaturePropRenderer: LadderMaterial does not have GPU instancing enabled.");
+            }
+
+            if (_stairMaterial != null && !_stairMaterial.enableInstancing)
+            {
+                Debug.LogError("FeaturePropRenderer: StairMaterial does not have GPU instancing enabled.");
+            }
+
+            if (_exitMaterial != null && !_exitMaterial.enableInstancing)
+            {
+                Debug.LogError("FeaturePropRenderer: ExitMaterial does not have GPU instancing enabled.");
             }
         }
     }

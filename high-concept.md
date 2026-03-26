@@ -2,57 +2,69 @@
 
 ## Elevator Pitch
 
-`Make It Out` is a first-person 3D maze escape game built around a single disorienting mechanic: 
-the player can rotate the camera to any of six axis-aligned views, and gravity and movement 
-always follow the camera. A corridor that was a floor becomes a wall. A wall becomes a ceiling. 
-The maze never changes — but the player's relationship to it does, completely, with every switch.
+`Make It Out` is a 3D maze escape game where the player navigates the interior of
+a cube-shaped labyrinth by rotating the camera to any of six axis-aligned views.
+Gravity and movement always follow the camera — a corridor that was a floor becomes
+a wall, a wall becomes a ceiling, depending on how many times you have switched.
+Levels get larger. The maze gets harder to model in your head. The clock does not
+stop.
 
 ## Player Fantasy
 
-You are deep inside a vast cube. The exit exists. You can feel the shape of the maze around you, 
-but only ever one plane at a time. The more you switch, the more the geometry reveals itself — 
-and the more disoriented you become. Getting out is not about speed. It is about building a 
-mental model of a space that refuses to stay still.
+You are deep inside a structure that does not care about your sense of up and down.
+You switch your view, the world rotates around you, and suddenly the path you came
+from is above your head. The exit exists. You have to find it faster than you found
+it last time.
 
 ## Core Mechanic
 
-The player moves in 2D at all times — left, right, jump, fall — but the axis those directions 
-map to in world space is determined entirely by the current camera orientation. Four arrow keys 
-rotate the camera 90 degrees at a time in any direction, including upside-down. Gravity always 
-pulls toward the camera's current down. A surface is a surface because you are looking at it 
-that way, not because it was designed as one.
+The player moves in 2D at all times — left, right, jump, fall — but those directions
+map to different world axes depending on the current camera orientation. Four arrow
+keys rotate the camera 90 degrees in any direction relative to the current view,
+including upside-down. Gravity always pulls toward the camera's current down.
 
-This creates the central tension of the game: every orientation switch that reveals a new path 
-forward is also a switch that makes the path you came from harder to retrace.
+This means the same physical corridor can be walked along its floor, its wall, or
+its ceiling depending on accumulated orientation switches. An obstacle that required
+a camera switch to pass on the way in may be jumpable on the way back. The maze
+never changes — the player's relationship to it does.
 
-## What Makes It Distinct
+## Progression Structure
 
-Most maze games ask the player to build a 2D map in their head. `Make It Out` asks the player 
-to build a 3D one — and then rotate it. The maze is procedurally generated fresh each run, so 
-no memorised solution survives. The challenge is spatial reasoning under accumulated 
-disorientation, not reflex or speed.
+The game is level-based. Each level is a freshly generated maze at a specific grid
+size. Early levels are small and introduce the mechanic. Later levels are larger,
+more complex, and demand a more accurate mental model of the space. Each run is
+timed. Finishing faster earns more stars. Stars unlock the next level.
+
+## Scoring
+
+Each level has five star thresholds based on completion time. Finishing at any time
+always awards at least one star — there is no hard fail on timeout. The timer turns
+red when the five-star window has passed, but the run continues. Stars are the
+primary progression currency and the secondary optimisation target after simply
+getting out.
 
 ## Target Experience
 
-- A single run feels like solving a puzzle that kept changing shape while you were solving it.
-- The moment of finding the exit feels earned in a way that is hard to immediately explain.
-- The player wants to try again because they now understand something they did not before.
+- First completion of a level feels earned and disorienting in equal measure.
+- Replaying a level to improve star rating feels like a different kind of puzzle —
+  the maze is the same but the player's spatial model of it is sharper.
+- Each new level size feels like a meaningful step up, not just more of the same.
 
 ## Target Session Length
 
-10 to 20 minutes per run. Not a speed game.
+- 3 to 15 minutes per level depending on size and player familiarity.
+- Level select and result screens support natural session breaks.
 
 ## Scope Guardrails
 
-- One scene. One mechanic. One win condition.
-- No combat, no collectibles, no timer unless playtesting reveals it is needed.
-- Visual polish is secondary to the spatial clarity of the maze geometry.
-- Audio and atmosphere are stretch goals — a working, readable maze comes first.
+- No combat, no collectibles, no enemies.
+- No procedural difficulty beyond grid size — complexity emerges from scale.
+- Visual polish is secondary to spatial clarity of the maze geometry.
+- Audio and atmosphere are stretch goals after the core loop is stable.
 
 ## Change Log
 
-### 2026-03-25
+### 2026-03-26
 
-- Rewrote baseline high concept to accurately reflect the axis-switch orientation mechanic,
-  which is the actual core of the game. Previous version described a generic maze escape 
-  without capturing the spatial disorientation mechanic or the camera-relative gravity system.
+- Rewrote to reflect level-based progression pivot. Previous version described a
+  single-run escape loop. Core mechanic description is unchanged.
