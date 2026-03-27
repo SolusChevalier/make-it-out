@@ -71,12 +71,24 @@ namespace MakeItOut.Runtime.Player
             PositionCamera(_currentOrientation);
         }
 
+        private void Start()
+        {
+            PublishOrientation();
+            PositionCamera(_currentOrientation);
+        }
+
         private void OnDestroy()
         {
             if (Instance == this)
             {
                 Instance = null;
             }
+        }
+
+        private void Start()
+        {
+            PublishOrientation();
+            PositionCamera(_currentOrientation);
         }
 
         private void Update()
@@ -102,6 +114,7 @@ namespace MakeItOut.Runtime.Player
 
             Vector3Int playerGrid = WorldGrid.Instance.WorldToGrid(_playerTransform.position);
             _transparencyManager.UpdateTransparency(playerGrid, _currentOrientation);
+            _transparencyManager.UpdateSectionCull(_playerTransform.position, _currentOrientation);
         }
 
         private void HandleZoom()

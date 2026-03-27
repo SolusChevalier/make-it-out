@@ -185,3 +185,11 @@ only where parameterization is required (grid sizing in Stage B).
 - **Change:** Consolidated arc from early single-run prototype through progression pivot (Stage A), runtime grid/session parameterization (Stage B), app-level flow state machine (Stage C), full menu/result UI bindings (Stage D), and gameplay/readability polish hooks (Stage E), culminating in Stage F verification and documentation pass.
 - **Impact:** The shipped project preserves the core camera-relative maze mechanic while adding level progression, persistent scoring, and a complete start-to-result loop suitable for jam submission.
 - **Follow-up:** Submit Windows build package and include known post-jam improvements list (orientation cube RT, wipe transitions, optional stretch features) separately from jam-scored scope.
+
+### 2026-03-27 - Post-submission camera occlusion and movement hotfixes
+
+- **Area:** Systems / Gameplay / Runtime stability
+- **Reason:** Playtest regressions showed section-view visibility was not cutting front chunks, grounded gravity accumulated over time and blocked jumping, and camera orientation initialization could desync from movement axes on first frame.
+- **Change:** Added `ChunkManager.ForEachChunk(Action<ChunkData, GameObject>)` for safe chunk iteration, implemented renderer-only section culling in `TransparencyManager.UpdateSectionCull(...)` with restore-on-next-frame behavior, called section culling from `CameraController.LateUpdate()`, added `CameraController.Start()` re-publish of orientation after all `Awake()` calls, and fixed grounded velocity clamp sign in `PlayerController` (`downComponent < 0f` → `downComponent > 0f`).
+- **Impact:** Camera now performs CAD-style front-chunk section cuts without disabling chunk GameObjects/colliders, jump reliability is restored while grounded, and player movement axes match camera orientation from startup.
+- **Follow-up:** Validate in Play Mode across all camera orientations: section cut boundaries, sustained idle-then-jump behavior, and post-rotation movement alignment.

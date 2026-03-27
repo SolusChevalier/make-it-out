@@ -16,11 +16,13 @@ namespace MakeItOut.Runtime.GridSystem
         private readonly List<Matrix4x4[]> _ladderBatches = new List<Matrix4x4[]>();
         private readonly List<Matrix4x4[]> _stairBatches = new List<Matrix4x4[]>();
         private readonly List<Matrix4x4[]> _exitBatches = new List<Matrix4x4[]>();
-        private readonly MaterialPropertyBlock _exitMpb = new MaterialPropertyBlock();
+        // Initialised in Start() — Unity forbids creating engine objects in field initializers.
+        private MaterialPropertyBlock _exitMpb;
         private static readonly int s_emissionColorId = Shader.PropertyToID("_EmissionColor");
 
         private void Start()
         {
+            _exitMpb = new MaterialPropertyBlock();
             ValidateMaterials();
         }
 

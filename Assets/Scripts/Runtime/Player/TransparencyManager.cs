@@ -12,11 +12,13 @@ namespace MakeItOut.Runtime.Player
 
         private MaterialPropertyBlock _mpb;
         private List<Renderer> _currentlyTransparent;
+        private List<Renderer> _sectionCulledRenderers;
 
         private void Awake()
         {
             _mpb = new MaterialPropertyBlock();
             _currentlyTransparent = new List<Renderer>();
+            _sectionCulledRenderers = new List<Renderer>();
         }
 
         public void UpdateTransparency(Vector3Int playerGridPos, Quaternion cameraOrientation)
@@ -90,6 +92,45 @@ namespace MakeItOut.Runtime.Player
             }
 
             _currentlyTransparent.Clear();
+        }
+
+        public void UpdateSectionCull(Vector3 playerWorldPos, Quaternion cameraOrientation)
+        {
+            for (int i = 0; i < _sectionCulledRenderers.Count; i++)
+            {
+                Renderer renderer = _sectionCulledRenderers[i];
+                if (renderer != null)
+                {
+                    renderer.enabled = true;
+                }
+            }
+
+            _sectionCulledRenderers.Clear();
+
+            if (ChunkManager.Instance == null)
+            {
+                return;
+            }
+
+            Vector3 viewForward = cameraOrientation * Vector3.forward;
+            float playerDepth = Vector3.Dot(playerWorldPos, viewForward);
+            float halfChunk = GridConfig.ChunkSize * GridConfig.BlockSize * 0.5f;
+
+            ChunkManager.Instance.ForEachChunk((data, obj) =>
+            {
+                Vector3 centre = data.WorldOrigin + Vector3.one * halfChunk;
+                float chunkDepth = Vector3.Dot(centre, viewForward);
+
+                if (chunkDepth + halfChunk < playerDepth)
+                {
+                    Renderer renderer = obj.GetComponent<Renderer>();
+                    if (renderer != null && renderer.enabled)
+                    {
+                        renderer.enabled = false;
+                        _sectionCulledRenderers.Add(renderer);
+                    }
+                }
+            });
         }
     }
 }

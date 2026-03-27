@@ -137,6 +137,23 @@ namespace MakeItOut.Runtime.GridSystem
             return obj;
         }
 
+        public void ForEachChunk(Action<ChunkData, GameObject> callback)
+        {
+            if (callback == null)
+            {
+                return;
+            }
+
+            EnsureDictionaries();
+            foreach (KeyValuePair<Vector3Int, ChunkData> kvp in _chunks)
+            {
+                if (_chunkObjects.TryGetValue(kvp.Key, out GameObject obj) && obj != null)
+                {
+                    callback(kvp.Value, obj);
+                }
+            }
+        }
+
         public void RebuildChunkMesh(Vector3Int chunkCoord)
         {
             Debug.Log($"RebuildChunkMesh called for {chunkCoord} - stub, implement in System 5");

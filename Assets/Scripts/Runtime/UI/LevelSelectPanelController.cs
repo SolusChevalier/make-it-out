@@ -78,45 +78,4 @@ namespace MakeItOut.Runtime.UI
         }
     }
 
-    public class LevelButtonItem : MonoBehaviour
-    {
-        [SerializeField] private UiButton _button;
-        [SerializeField] private TMP_Text _numberLabel;
-        [SerializeField] private TMP_Text _nameLabel;
-        [SerializeField] private TMP_Text _gridSizeLabel;
-        [SerializeField] private StarRatingDisplay _stars;
-        [SerializeField] private GameObject _lockIcon;
-
-        private void Awake()
-        {
-            if (_button == null)
-                _button = GetComponent<UiButton>();
-            if (_numberLabel == null)
-                _numberLabel = transform.Find("LevelNumber")?.GetComponent<TMP_Text>();
-            if (_nameLabel == null)
-                _nameLabel = transform.Find("LevelName")?.GetComponent<TMP_Text>();
-            if (_gridSizeLabel == null)
-                _gridSizeLabel = transform.Find("GridSizeLabel")?.GetComponent<TMP_Text>();
-            if (_stars == null)
-                _stars = transform.Find("StarRatingDisplay")?.GetComponent<StarRatingDisplay>();
-            if (_lockIcon == null)
-                _lockIcon = transform.Find("LockIcon")?.gameObject;
-        }
-
-        public void Bind(int index, LevelDefinition def, bool unlocked, int stars, float bestTime)
-        {
-            if (_button == null || _numberLabel == null || _nameLabel == null || _gridSizeLabel == null || _stars == null || _lockIcon == null)
-                return;
-
-            _numberLabel.text = $"{index + 1:D2}";
-            _nameLabel.text = def.DisplayName;
-            _gridSizeLabel.text = $"{def.GridSize} x {def.GridSize} x {def.GridSize}";
-            _stars.SetStars(stars);
-            _lockIcon.SetActive(!unlocked);
-            _button.SetInteractable(unlocked);
-
-            if (unlocked)
-                _button.AddListener(() => GameManager.Instance.SelectLevel(index));
-        }
-    }
 }

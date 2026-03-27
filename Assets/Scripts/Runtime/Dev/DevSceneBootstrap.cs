@@ -12,6 +12,13 @@ namespace MakeItOut.Runtime.Dev
         {
             yield return null;
 
+            // Only auto-run in dev scenes (names starting with "Dev").
+            // This component is also present in the MainMenu scene for legacy
+            // reasons but must not auto-navigate there.
+            string sceneName = UnityEngine.SceneManagement.SceneManager.GetActiveScene().name;
+            if (!sceneName.StartsWith("Dev"))
+                yield break;
+
             if (GameManager.Instance == null)
             {
                 Debug.LogError("DevSceneBootstrap: GameManager not found. Ensure Bootstrap scene is loaded first.");

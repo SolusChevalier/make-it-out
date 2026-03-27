@@ -62,7 +62,7 @@ namespace MakeItOut.Runtime.UI
             _levelName.text = def.DisplayName;
             _gridSizeLabel.text = $"{def.GridSize} x {def.GridSize} x {def.GridSize}";
 
-            string[] starLabels = { "★★★★★", "★★★★", "★★★", "★★" };
+            string[] starLabels = { "5 STARS", "4 STARS", "3 STARS", "2 STARS" };
             for (int i = 0; i < 4 && i < _starTargetRows.Length; i++)
             {
                 float t = def.StarThresholds[i];

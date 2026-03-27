@@ -131,7 +131,7 @@ namespace MakeItOut.Runtime.Player
                 }
 
                 float downComponent = Vector3.Dot(_velocity, -camUp);
-                if (downComponent < 0f)
+                if (downComponent > 0f)
                 {
                     _velocity -= -camUp * downComponent;
                 }
