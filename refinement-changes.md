@@ -193,3 +193,11 @@ only where parameterization is required (grid sizing in Stage B).
 - **Change:** Added `ChunkManager.ForEachChunk(Action<ChunkData, GameObject>)` for safe chunk iteration, implemented renderer-only section culling in `TransparencyManager.UpdateSectionCull(...)` with restore-on-next-frame behavior, called section culling from `CameraController.LateUpdate()`, added `CameraController.Start()` re-publish of orientation after all `Awake()` calls, and fixed grounded velocity clamp sign in `PlayerController` (`downComponent < 0f` → `downComponent > 0f`).
 - **Impact:** Camera now performs CAD-style front-chunk section cuts without disabling chunk GameObjects/colliders, jump reliability is restored while grounded, and player movement axes match camera orientation from startup.
 - **Follow-up:** Validate in Play Mode across all camera orientations: section cut boundaries, sustained idle-then-jump behavior, and post-rotation movement alignment.
+
+### 2026-03-27 - Maze density readability pass
+
+- **Area:** Gameplay / Maze generation
+- **Reason:** The generated maze was too dense for casual readability, with one-block wall separation and too many loop openings reducing corridor legibility.
+- **Change:** Updated `CarveMazeJob` in `MazeGenerationJobs.cs` to expand DFS neighbour spacing from ±2 to ±4 and carve full 4-cell corridors between node positions instead of midpoint-only carving. Reduced loop injection chance in `MazeGenerator.InjectLoops` from `0.25` to `0.05`.
+- **Impact:** Corridor networks are sparser with thicker walls between parallel passages, improving line-of-sight planning and reducing visual clutter while preserving connected-maze generation and occasional loops.
+- **Follow-up:** Playtest multiple seeds/levels for pacing and difficulty; if too open, consider raising loop chance modestly (e.g. `0.10`) or revisiting grid sizes per level.
